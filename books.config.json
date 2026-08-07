@@ -1,0 +1,10 @@
+{
+  "books": [
+    {
+      "id": "mulesoft-bootcamp",
+      "title": "Two-Day MuleSoft → Salesforce Bootcamp",
+      "path": "/Users/yurisyuganov/Library/CloudStorage/Dropbox/_work_stuff_/consulting/mulesoft_integrations/bootcamp-book",
+      "accent": "#0e7268"
+    }
+  ]
+}
