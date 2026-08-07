@@ -2,9 +2,16 @@
   "books": [
     {
       "id": "mulesoft-bootcamp",
-      "title": "Two-Day MuleSoft → Salesforce Bootcamp",
+      "title": "Two-Day MuleSoft \u2192 Salesforce Bootcamp",
       "path": "/Users/yurisyuganov/Library/CloudStorage/Dropbox/_work_stuff_/consulting/mulesoft_integrations/bootcamp-book",
       "accent": "#0e7268"
+    }
+  ],
+  "collections": [
+    {
+      "dir": "/Users/yurisyuganov/Library/CloudStorage/Dropbox/_work_stuff_/projects/modernQAcourse/modernQAcourse-books/en",
+      "mode": "single-file",
+      "accent": "#5b4a8a"
     }
   ]
 }

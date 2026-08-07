@@ -4,9 +4,11 @@ import { marked } from "marked";
 // Cleanup passes are corpus-specific: citation residue, heading demotion,
 // blockquotes-as-model-answers, ASCII-diagram detection.
 
-export function renderSubChapterHtml(markdown: string): string {
+export type RenderOpts = { assetBase?: string };
+
+export function renderSubChapterHtml(markdown: string, opts: RenderOpts = {}): string {
   const cleaned = cleanSource(markdown);
-  let html = marked.parse(cleaned, markedOptions()) as string;
+  let html = marked.parse(cleaned, markedOptions(opts)) as string;
 
   // In-body headings sit under page-chrome titles; demote 2 levels so the
   // article scale stays consistent regardless of source depth (h1→h3 … h4→h6).
@@ -20,8 +22,8 @@ export function renderSubChapterHtml(markdown: string): string {
   return html;
 }
 
-export function renderPlainHtml(markdown: string): string {
-  return marked.parse(cleanSource(markdown), markedOptions()) as string;
+export function renderPlainHtml(markdown: string, opts: RenderOpts = {}): string {
+  return marked.parse(cleanSource(markdown), markedOptions(opts)) as string;
 }
 
 /**
@@ -44,8 +46,19 @@ function cleanSource(markdown: string): string {
   return out.join("\n");
 }
 
-function markedOptions() {
+function markedOptions(opts: RenderOpts = {}) {
   const renderer = new marked.Renderer();
+
+  // Relative image paths resolve against the book's asset route so books can
+  // carry their own images (covers, diagrams) next to the markdown.
+  renderer.image = ({ href, title, text }) => {
+    let src = href ?? "";
+    if (!/^(https?:)?\/\//i.test(src) && !src.startsWith("/") && opts.assetBase) {
+      src = opts.assetBase + src.split("/").map(encodeURIComponent).join("/");
+    }
+    const titleAttr = title ? ` title="${escapeHtmlAttr(title)}"` : "";
+    return `<img src="${escapeHtmlAttr(src)}" alt="${escapeHtmlAttr(text ?? "")}"${titleAttr} loading="lazy" />`;
+  };
 
   renderer.link = ({ href, title, text }) => {
     let rawHref = href ?? "";

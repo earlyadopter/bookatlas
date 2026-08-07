@@ -25,6 +25,10 @@ export default async function LibraryPage() {
               className="book-card"
               style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
             >
+              {book.coverUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img className="book-card-cover" src={book.coverUrl} alt="" />
+              ) : null}
               <span className="eyebrow">{book.chapters.length} chapters · {subCount} sections</span>
               <span className="book-card-title">{book.title}</span>
               {book.description ? <span className="book-card-desc">{book.description}</span> : null}

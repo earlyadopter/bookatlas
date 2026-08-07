@@ -193,6 +193,15 @@ a {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
+.book-card-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  margin-bottom: 4px;
+}
+
 .book-card-title {
   font-family: var(--font-display-stack);
   font-size: 1.25rem;

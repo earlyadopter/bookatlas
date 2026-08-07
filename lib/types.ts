@@ -15,6 +15,8 @@ export type BookConfig = {
   id: string;
   title: string;
   path: string;
+  /** "files": folder of chapter .md files (default). "single-file": one book.md. */
+  mode?: "files" | "single-file";
   description?: string;
   accent?: string;
   parser?: ParserOverrides;
@@ -54,6 +56,8 @@ export interface Chapter {
   introMd: string | null;
   /** Content BEFORE the chapter heading (module-01's book-wide TOC). */
   preambleMd: string | null;
+  /** "Part III — Foundations" divider label (single-file books). */
+  part?: string | null;
   subchapters: SubChapter[];
 }
 
@@ -62,6 +66,8 @@ export interface Book {
   title: string;
   description?: string;
   dir: string;
+  mode: "files" | "single-file";
+  coverUrl?: string;
   accent?: string;
   chapters: Chapter[];
   tagCounts: Record<Tag, number>;

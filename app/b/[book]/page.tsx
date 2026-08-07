@@ -45,6 +45,7 @@ export default async function BookPage({
               className={dimmed ? "chapter-tile dimmed" : "chapter-tile"}
             >
               <span className="chapter-tile-num">{String(ch.number).padStart(2, "0")}</span>
+              {ch.part ? <span className="eyebrow">{ch.part}</span> : null}
               <span className="chapter-tile-title">{ch.title}</span>
               <span className="chapter-tile-meta">
                 {ch.subchapters.length} sections

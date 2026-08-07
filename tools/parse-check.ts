@@ -18,6 +18,7 @@ async function main() {
     console.log(`\n== ${book.id} (${book.chapters.length} chapters) ==`);
     let total = 0;
 
+    const structural = book.mode !== "single-file";
     for (const ch of book.chapters) {
       total += ch.subchapters.length;
       const numbered = ch.subchapters.filter((s) => s.number !== null).length;
@@ -26,6 +27,7 @@ async function main() {
           `${ch.preambleMd ? " +preamble" : ""}${ch.introMd ? " +intro" : ""}  "${ch.fullTitle}"`
       );
 
+      if (!structural) continue;
       const fileNum = ch.file.match(/(\d+)\.md$/)?.[1];
       if (fileNum && parseInt(fileNum, 10) !== ch.number) {
         fail(`${ch.slug}: filename number ${fileNum} != chapter number ${ch.number}`);
