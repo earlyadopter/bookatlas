@@ -423,9 +423,9 @@ Example input:
 
 ```json
 {
-  "firstName": "Yuri",
-  "lastName": "Syuganov",
-  "email": "yuri@example.com"
+  "firstName": "Yourname",
+  "lastName": "Yoursurname",
+  "email": "yourname@example.com"
 }
 ```
 
@@ -433,9 +433,9 @@ Salesforce expects:
 
 ```json
 {
-  "FirstName": "Yuri",
-  "LastName": "Syuganov",
-  "Email": "yuri@example.com"
+  "FirstName": "Yourname",
+  "LastName": "Yoursurname",
+  "Email": "yourname@example.com"
 }
 ```
 

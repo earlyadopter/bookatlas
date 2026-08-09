@@ -26,9 +26,21 @@ pnpm dev
 
 Open http://localhost:3000 — the demo book (20 chapters, ~1,000 sections) renders from `demo/mulesoft-bootcamp/`.
 
+## Making book files from an LLM conversation
+
+Bookatlas reads plain markdown, and chat assistants already produce it — the bundled demo book is a saved ChatGPT conversation. The workflow:
+
+1. **Steer the conversation toward book shape.** Ask for long, structured answers with numbered sections (`5.1`, `5.2`, …) — the numbering is what becomes tiles. One big themed exchange (or a few) makes one chapter.
+2. **Copy each answer as markdown.** In ChatGPT, click the **Copy** icon under an answer — it lands in your clipboard as markdown, headings and code fences intact. Most other assistants have the same control.
+3. **Paste into a text editor and save with an `.md` extension.** One file per chapter: `module-01.md`, `module-02.md`, … A chapter that spans several question/answer exchanges is fine — keep appending the copied answers to the same file.
+4. **Keep a number in the filename.** Chapter order is filename sort order, so `module-01.md … module-12.md` (zero-padded) reads in sequence.
+5. **Put the files in one folder per book.** The folder can live anywhere on disk (`~/books/kafka-crash-course/`) or inside this repo (`./content/kafka-crash-course/`) — Bookatlas reads it in place, nothing is imported or copied. Editing a file (or dropping in a new chapter) shows up on the next browser refresh.
+
+Alternatively, if you already have a whole book in a single markdown file with `# Chapter N:` headings — an export from a writing tool, a compiled draft — save it as `book.md` in its own folder and register it with `"mode": "single-file"`.
+
 ## Adding your books
 
-Books are registered in `books.config.json` (committed) and optionally `books.config.local.json` (gitignored — your private library; same-id entries override public ones):
+Point Bookatlas at your book folder in `books.config.json` (committed) or `books.config.local.json` (gitignored — your private library; same-id entries override public ones). The `id` you choose becomes the URL: `/b/my-book`.
 
 ```jsonc
 {
