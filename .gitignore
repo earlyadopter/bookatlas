@@ -6,3 +6,4 @@ out/
 .env*.local
 books.config.local.json
 planning/
+.obsidian/
