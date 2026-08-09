@@ -6,7 +6,7 @@ import type { Book, Chapter, Tag } from "./types";
 import { findBookConfig, loadBooksConfig } from "./config";
 import { parseChapter } from "./parseChapter";
 import { parseSingleFileBook } from "./parseSingleFileBook";
-import { renderSubChapterHtml } from "./renderMarkdown";
+import { renderPlainHtml, renderSubChapterHtml } from "./renderMarkdown";
 
 // Sources re-read + re-parse only when the file's mtime changes, so editing a
 // book in Dropbox shows up on browser refresh without a restart.
@@ -26,14 +26,19 @@ async function loadChapterFile(
   if (hit && hit.mtimeMs === stat.mtimeMs) return hit.chapter;
 
   const raw = await fs.readFile(file, "utf8");
-  const parsed = parseChapter(path.basename(file), raw, overrides);
+  const { introMd, preambleMd, ...parsed } = parseChapter(path.basename(file), raw, overrides);
   const chapter: Chapter = {
     ...parsed,
     file,
     mtimeMs: stat.mtimeMs,
+    introHtml: introMd ? renderPlainHtml(introMd, { assetBase }) : null,
+    preambleHtml: preambleMd ? renderPlainHtml(preambleMd, { assetBase }) : null,
+    // mdBody is blanked after rendering: raw markdown must never be reachable
+    // from route handlers or serialized into RSC payloads.
     subchapters: parsed.subchapters.map((s) => ({
       ...s,
-      html: renderSubChapterHtml(s.mdBody, { assetBase })
+      html: renderSubChapterHtml(s.mdBody, { assetBase }),
+      mdBody: ""
     }))
   };
   chapterCache.set(file, { mtimeMs: stat.mtimeMs, chapter });
@@ -47,16 +52,19 @@ async function loadSingleFile(file: string, assetBase: string) {
 
   const raw = await fs.readFile(file, "utf8");
   const parsed = parseSingleFileBook(raw);
-  const chapters: Chapter[] = parsed.chapters.map((ch, idx) => ({
+  const chapters: Chapter[] = parsed.chapters.map(({ introMd, preambleMd, ...ch }, idx) => ({
     ...ch,
     file,
     mtimeMs: stat.mtimeMs,
+    introHtml: introMd ? renderPlainHtml(introMd, { assetBase }) : null,
     // Book-level front matter (title page, About, TOC) rides on the first
     // chapter as the collapsible "About this book" block.
-    preambleMd: idx === 0 ? parsed.preambleMd : null,
+    preambleHtml:
+      idx === 0 && parsed.preambleMd ? renderPlainHtml(parsed.preambleMd, { assetBase }) : null,
     subchapters: ch.subchapters.map((s) => ({
       ...s,
-      html: renderSubChapterHtml(s.mdBody, { assetBase })
+      html: renderSubChapterHtml(s.mdBody, { assetBase }),
+      mdBody: ""
     }))
   }));
   const entry = {

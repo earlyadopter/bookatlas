@@ -23,8 +23,8 @@ const monoFont = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Textbook Viewer", template: "%s — Textbook Viewer" },
-  description: "Markdown books as zoomable tiles"
+  title: { default: "Bookatlas", template: "%s — Bookatlas" },
+  description: "Markdown books as zoomable tile atlases"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

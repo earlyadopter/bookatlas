@@ -1,25 +1,49 @@
-import { listBooks } from "../lib/loadBook";
+import fs from "node:fs";
+import path from "node:path";
+import { loadBooksConfig } from "../lib/config";
+import { parseChapter, type ParsedChapter } from "../lib/parseChapter";
+import { parseSingleFileBook } from "../lib/parseSingleFileBook";
+import type { Tag } from "../lib/types";
 
-// CLI tripwire for the corpus-tuned parser: prints per-chapter stats and
+// CLI tripwire for the corpus-tuned parsers: prints per-chapter stats and
 // exits 1 on structural anomalies (missed splits, leaked headings, number
-// mismatches). Run: pnpm parse:check
+// mismatches). Works on raw parser output — the runtime object graph
+// deliberately carries no markdown (see loadBook), so this tool parses the
+// sources itself. Run: pnpm parse:check
 
 const NUMBERED_HEADING_IN_BODY = /^#{1,2}\s+\d+\.(\d+\s+|\s+)\S/;
 
 async function main() {
-  const books = await listBooks();
   let failures = 0;
   const fail = (msg: string) => {
     failures++;
     console.error(`  FAIL ${msg}`);
   };
 
-  for (const book of books) {
-    console.log(`\n== ${book.id} (${book.chapters.length} chapters) ==`);
-    let total = 0;
+  for (const config of loadBooksConfig()) {
+    const structural = config.mode !== "single-file";
+    let chapters: (ParsedChapter & { file: string })[];
 
-    const structural = book.mode !== "single-file";
-    for (const ch of book.chapters) {
+    if (config.mode === "single-file") {
+      const file = path.join(config.path, "book.md");
+      const parsed = parseSingleFileBook(fs.readFileSync(file, "utf8"));
+      chapters = parsed.chapters.map((ch) => ({ ...ch, file }));
+    } else {
+      const files = fs
+        .readdirSync(config.path)
+        .filter((f) => f.endsWith(".md") && !f.startsWith("."))
+        .sort((a, b) => a.localeCompare(b));
+      chapters = files.map((f) => {
+        const file = path.join(config.path, f);
+        return { ...parseChapter(f, fs.readFileSync(file, "utf8"), config.parser), file };
+      });
+    }
+
+    console.log(`\n== ${config.id} (${chapters.length} chapters) ==`);
+    let total = 0;
+    const tagCounts: Record<Tag, number> = { interview: 0, cheatsheet: 0, teaser: 0, code: 0 };
+
+    for (const ch of chapters) {
       total += ch.subchapters.length;
       const numbered = ch.subchapters.filter((s) => s.number !== null).length;
       console.log(
@@ -27,7 +51,12 @@ async function main() {
           `${ch.preambleMd ? " +preamble" : ""}${ch.introMd ? " +intro" : ""}  "${ch.fullTitle}"`
       );
 
+      for (const sub of ch.subchapters) {
+        for (const tag of sub.tags) tagCounts[tag]++;
+      }
+
       if (!structural) continue;
+
       const fileNum = ch.file.match(/(\d+)\.md$/)?.[1];
       if (fileNum && parseInt(fileNum, 10) !== ch.number) {
         fail(`${ch.slug}: filename number ${fileNum} != chapter number ${ch.number}`);
@@ -49,9 +78,6 @@ async function main() {
             fail(`${ch.slug}/${sub.slug}: numbered heading leaked into body: "${trimmed}"`);
           }
         }
-        if (sub.mdBody.trim() === "" && !/four objects/i.test(sub.title)) {
-          console.warn(`  warn ${ch.slug}/${sub.slug}: empty body`);
-        }
         if (/\[\d+\]:\s+https?:/.test(sub.mdBody)) {
           fail(`${ch.slug}/${sub.slug}: footnote definitions leaked into body`);
         }
@@ -59,8 +85,8 @@ async function main() {
     }
 
     console.log(
-      `  TOTAL ${total} sub-chapters · tags: interview ${book.tagCounts.interview}, ` +
-        `cheatsheet ${book.tagCounts.cheatsheet}, teaser ${book.tagCounts.teaser}, code ${book.tagCounts.code}`
+      `  TOTAL ${total} sub-chapters · tags: interview ${tagCounts.interview}, ` +
+        `cheatsheet ${tagCounts.cheatsheet}, teaser ${tagCounts.teaser}, code ${tagCounts.code}`
     );
   }
 

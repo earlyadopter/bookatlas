@@ -11,7 +11,7 @@ export default async function LibraryPage() {
   return (
     <main className="page">
       <header className="topbar">
-        <span className="brand">Textbook Viewer</span>
+        <span className="brand">Bookatlas</span>
         <ThemeToggle />
       </header>
       <h1 className="page-title">Library</h1>

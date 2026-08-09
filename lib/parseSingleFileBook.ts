@@ -1,4 +1,5 @@
-import type { Chapter, SubChapter } from "./types";
+import type { SubChapter } from "./types";
+import type { ParsedChapter } from "./parseChapter";
 import { computeTags } from "./tags";
 import { slugify } from "./slugs";
 import { extractExcerpt } from "./renderMarkdown";
@@ -18,7 +19,7 @@ const PART_RE = /^# ((?:PART|Part)\b.*)$/;
 export type ParsedBook = {
   title: string | null;
   preambleMd: string | null;
-  chapters: Omit<Chapter, "file" | "mtimeMs">[];
+  chapters: ParsedChapter[];
 };
 
 export function parseSingleFileBook(raw: string): ParsedBook {

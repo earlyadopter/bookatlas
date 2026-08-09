@@ -27,7 +27,7 @@ export default async function BookPage({
       style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
     >
       <header className="topbar">
-        <Link href="/" className="brand">Textbook Viewer</Link>
+        <Link href="/" className="brand">Bookatlas</Link>
         <ThemeToggle />
       </header>
       <h1 className="page-title">{book.title}</h1>

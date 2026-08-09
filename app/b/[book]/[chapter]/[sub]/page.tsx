@@ -5,34 +5,39 @@ import type { CSSProperties } from "react";
 import { getBook } from "@/lib/loadBook";
 import { chapterHref, subHref } from "@/lib/slugs";
 import { getPrevNext, matchesFilter, parseFilter } from "@/lib/nav";
-import type { SubChapter } from "@/lib/types";
 import { ChapterStrip } from "@/components/ChapterStrip";
 import { KeyNav } from "@/components/KeyNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
 
+// Takes only the outline fields, never a full SubChapter — keeps section
+// content (html) out of this subtree so nothing can serialize it client-side.
 function MiniTile({
   bookId,
   chapterSlug,
-  sub,
+  slug,
+  displayNumber,
+  title,
   distance,
   filter
 }: {
   bookId: string;
   chapterSlug: string;
-  sub: SubChapter;
+  slug: string;
+  displayNumber: string;
+  title: string;
   distance: number;
   filter?: string;
 }) {
   return (
     <TransitionLink
-      href={subHref(bookId, chapterSlug, sub.slug, filter)}
+      href={subHref(bookId, chapterSlug, slug, filter)}
       className={distance <= 2 ? "mini" : "mini far"}
       style={{ "--d": distance } as CSSProperties}
     >
-      <span className="mini-num">{sub.displayNumber || "•"}</span>
-      <span className="mini-title">{sub.title}</span>
+      <span className="mini-num">{displayNumber || "•"}</span>
+      <span className="mini-title">{title}</span>
     </TransitionLink>
   );
 }
@@ -93,7 +98,7 @@ export default async function SubChapterPage({
         nextChapterHref={nextChapter ? chapterHref(book.id, nextChapter.slug, fParam) : null}
       />
       <header className="topbar">
-        <Link href="/" className="brand">Textbook Viewer</Link>
+        <Link href="/" className="brand">Bookatlas</Link>
         <Link href={`/b/${book.id}`} className="topbar-book">{book.title}</Link>
         <ThemeToggle />
       </header>
@@ -112,7 +117,9 @@ export default async function SubChapterPage({
               key={s.slug}
               bookId={book.id}
               chapterSlug={chapter.slug}
-              sub={s}
+              slug={s.slug}
+              displayNumber={s.displayNumber}
+              title={s.title}
               distance={i + 1}
               filter={fParam}
             />
@@ -160,7 +167,9 @@ export default async function SubChapterPage({
               key={s.slug}
               bookId={book.id}
               chapterSlug={chapter.slug}
-              sub={s}
+              slug={s.slug}
+              displayNumber={s.displayNumber}
+              title={s.title}
               distance={i + 1}
               filter={fParam}
             />

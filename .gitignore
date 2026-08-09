@@ -4,3 +4,4 @@ out/
 *.tsbuildinfo
 .DS_Store
 .env*.local
+books.config.local.json

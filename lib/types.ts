@@ -31,7 +31,8 @@ export interface SubChapter {
   /** 0-based position within the chapter, filter-independent. */
   ordinal: number;
   title: string;
-  /** Body markdown WITHOUT its own heading line. */
+  /** Body markdown WITHOUT its own heading line. Present in parser output;
+      loadBook blanks it after rendering so raw source never reaches routes. */
   mdBody: string;
   html: string;
   tags: Tag[];
@@ -52,10 +53,10 @@ export interface Chapter {
   fullTitle: string;
   file: string;
   mtimeMs: number;
-  /** Content between the chapter heading and the first sub-chapter. */
-  introMd: string | null;
-  /** Content BEFORE the chapter heading (module-01's book-wide TOC). */
-  preambleMd: string | null;
+  /** Rendered HTML of content between the chapter heading and the first sub-chapter. */
+  introHtml: string | null;
+  /** Rendered HTML of content BEFORE the chapter heading (a book-wide TOC/front matter). */
+  preambleHtml: string | null;
   /** "Part III — Foundations" divider label (single-file books). */
   part?: string | null;
   subchapters: SubChapter[];

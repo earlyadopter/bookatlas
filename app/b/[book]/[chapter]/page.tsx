@@ -7,7 +7,6 @@ import { ChapterStrip } from "@/components/ChapterStrip";
 import { FilterChips } from "@/components/FilterChips";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TransitionLink } from "@/components/transitions";
-import { renderPlainHtml } from "@/lib/renderMarkdown";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +38,7 @@ export default async function ChapterPage({
       style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
     >
       <header className="topbar">
-        <Link href="/" className="brand">Textbook Viewer</Link>
+        <Link href="/" className="brand">Bookatlas</Link>
         <Link href={`/b/${book.id}`} className="topbar-book">{book.title}</Link>
         <ThemeToggle />
       </header>
@@ -55,14 +54,14 @@ export default async function ChapterPage({
         active={filter}
         counts={book.tagCounts}
       />
-      {chapter.preambleMd ? (
+      {chapter.preambleHtml ? (
         <details className="preamble">
           <summary>About this book</summary>
-          <div className="doc" dangerouslySetInnerHTML={{ __html: renderPlainHtml(chapter.preambleMd) }} />
+          <div className="doc" dangerouslySetInnerHTML={{ __html: chapter.preambleHtml }} />
         </details>
       ) : null}
-      {chapter.introMd ? (
-        <div className="doc chapter-intro" dangerouslySetInnerHTML={{ __html: renderPlainHtml(chapter.introMd) }} />
+      {chapter.introHtml ? (
+        <div className="doc chapter-intro" dangerouslySetInnerHTML={{ __html: chapter.introHtml }} />
       ) : null}
       <div className="sub-grid">
         {chapter.subchapters.map((sub) => {

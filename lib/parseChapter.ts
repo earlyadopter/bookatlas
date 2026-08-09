@@ -14,7 +14,10 @@ const BARE_ORDINAL = /^(\d+)\.\s+(.+)$/; // "7. Title" (module-01 style)
 const FOOTNOTE_DEF = /^\[\d+\]:\s+https?:\/\//;
 const UNNUMBERED_H2_SPLIT = /^Next\s*[—:–-]|cheat ?sheet/i;
 
-export type ParsedChapter = Omit<Chapter, "file" | "mtimeMs">;
+export type ParsedChapter = Omit<Chapter, "file" | "mtimeMs" | "introHtml" | "preambleHtml"> & {
+  introMd: string | null;
+  preambleMd: string | null;
+};
 
 export function parseChapter(
   filename: string,
