@@ -5,3 +5,4 @@ out/
 .DS_Store
 .env*.local
 books.config.local.json
+planning/
