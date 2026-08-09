@@ -5,6 +5,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
 
+const GITHUB_URL = "https://github.com/earlyadopter/bookatlas";
+
 export default async function LibraryPage() {
   const books = await listBooks();
 
@@ -12,9 +14,33 @@ export default async function LibraryPage() {
     <main className="page">
       <header className="topbar">
         <span className="brand">Bookatlas</span>
+        <a href={GITHUB_URL} className="topbar-book" target="_blank" rel="noopener">
+          GitHub
+        </a>
         <ThemeToggle />
       </header>
-      <h1 className="page-title">Library</h1>
+
+      <section className="hero">
+        <h1 className="hero-title">Markdown books as zoomable tile atlases</h1>
+        <p className="hero-lede">
+          Turn folders of markdown — saved LLM conversations, book drafts, course notes — into a
+          spatial reading experience: chapters as tiles, sections as tiles, click to zoom into a
+          reading view with neighboring sections on side rails. Built for texts that are too big to
+          scroll and too structured to flatten. Open source, MIT, no database.
+        </p>
+        <p className="hero-actions">
+          <a href={GITHUB_URL} className="chip current" target="_blank" rel="noopener">
+            Get it on GitHub →
+          </a>
+        </p>
+      </section>
+
+      <h2 className="page-title">Try it — the demo book, live</h2>
+      <p className="hero-note">
+        A 20-module MuleSoft bootcamp, generated in conversation with ChatGPT and rendered straight
+        from its markdown files. Click a book, then a chapter, then any tile. Use{" "}
+        <kbd>←</kbd>/<kbd>→</kbd> to read through.
+      </p>
       <div className="book-grid">
         {books.map((book) => {
           const subCount = book.chapters.reduce((n, ch) => n + ch.subchapters.length, 0);
@@ -43,6 +69,47 @@ export default async function LibraryPage() {
       {books.length === 0 ? (
         <p className="empty">No books configured. Add one to books.config.json.</p>
       ) : null}
+
+      <section className="landing-section">
+        <h2 className="page-title">The whole book on one screen</h2>
+        <p className="hero-note">
+          Chapter tiles with section counts and content-type filters — non-matching sections dim
+          but stay in place, so the spatial map survives filtering.
+        </p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="landing-shot" src="/shots/book-chapters.png" alt="Book view: chapter tiles with section counts and filter chips" />
+      </section>
+
+      <section className="landing-section">
+        <h2 className="page-title">Drill mode</h2>
+        <p className="hero-note">
+          Filter to interview Q&A and read the filtered sequence — prev/next skips to the nearest
+          matching section, across chapter boundaries.
+        </p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="landing-shot" src="/shots/interview-drill.png" alt="Filtered reading view with rails showing only matching sections" />
+      </section>
+
+      <section className="landing-section">
+        <h2 className="page-title">Run it on your own books</h2>
+        <pre className="landing-code">{`git clone ${GITHUB_URL}.git
+cd bookatlas
+pnpm install && pnpm dev
+# point books.config.json at any folder of .md files`}</pre>
+        <p className="hero-note">
+          Two parsing profiles, auto-applied: folders of chapter files (LLM-conversation exports,
+          where heading depth lies) and single-file books with <code>Chapter N</code> headings.{" "}
+          <a href={`${GITHUB_URL}#making-book-files-from-an-llm-conversation`} target="_blank" rel="noopener">
+            How to make book files from an LLM conversation →
+          </a>
+        </p>
+      </section>
+
+      <footer className="landing-footer">
+        <a href={GITHUB_URL} target="_blank" rel="noopener">GitHub</a> ·{" "}
+        <a href="https://modernqacourse.com" target="_blank" rel="noopener">powers modernQAcourse</a> ·{" "}
+        MIT © <a href="https://earlyadopterlabs.com" target="_blank" rel="noopener">Yuri Syuganov</a>
+      </footer>
     </main>
   );
 }

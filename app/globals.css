@@ -144,6 +144,80 @@ a {
   color: var(--muted);
 }
 
+/* ── Landing (bookatlas.dev home) ─────────────────────────────────────── */
+
+.hero {
+  padding: 40px 0 8px;
+  max-width: 46rem;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 2.4vw + 1.4rem, 3rem);
+  line-height: 1.1;
+  margin: 0 0 16px;
+}
+
+.hero-lede {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 20px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+.hero-note {
+  color: var(--muted);
+  max-width: 60ch;
+  margin-top: -6px;
+}
+
+.hero-note kbd {
+  font-family: var(--font-mono-stack);
+  font-size: 0.8em;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+
+.landing-section {
+  margin-top: 56px;
+}
+
+.landing-shot {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin-top: 10px;
+}
+
+.landing-code {
+  background: var(--code);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--font-mono-stack);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.landing-footer {
+  margin-top: 64px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.landing-footer a {
+  color: var(--accent);
+}
+
 /* ── Cards & tiles (shared idiom: 1px line border, accent stripe) ─────── */
 
 .book-card,

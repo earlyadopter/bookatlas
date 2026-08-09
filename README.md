@@ -4,7 +4,7 @@ Turn folders of markdown — saved LLM conversations, book drafts, course notes 
 
 Born from a real workflow: long ChatGPT conversations saved as markdown "books" (the bundled demo is one — a 20-module MuleSoft bootcamp generated while onboarding into an unfamiliar stack), then navigated spatially instead of linearly. Bookatlas powers the book library at [modernQAcourse.com](https://modernqacourse.com).
 
-Bookatlas is open source under the [MIT license](LICENSE) — use it, fork it, ship your own library on it.
+Bookatlas is open source under the [MIT license](LICENSE) — use it, fork it, ship your own library on it. **Site and live demo: [bookatlas.dev](https://bookatlas.dev).**
 
 ![Zoomed reading view: the section occupies the stage, neighboring sections stack on both rails, chapters strip on top](docs/screenshots/reading-view.png)
 

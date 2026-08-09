@@ -28,6 +28,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Analytics is opt-in per deployment: set NEXT_PUBLIC_GA_MEASUREMENT_ID in
+  // the environment. Self-hosted instances without it load no tracking at all.
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   return (
     <html
       lang="en"
@@ -51,6 +54,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 })();`
           }}
         />
+        {gaId ? (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}');`
+              }}
+            />
+          </>
+        ) : null}
         <RouteListener />
         {children}
       </body>
