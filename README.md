@@ -6,6 +6,8 @@ Born from a real workflow: long ChatGPT conversations saved as markdown "books" 
 
 Bookatlas is open source under the [MIT license](LICENSE) — use it, fork it, ship your own library on it.
 
+![Zoomed reading view: the section occupies the stage, neighboring sections stack on both rails, chapters strip on top](docs/screenshots/reading-view.png)
+
 ## Features
 
 - **Spatial navigation** — library → book → chapter grid → zoomed section with distance-compressed rails ("deck" effect); every state is a bookmarkable URL
@@ -78,6 +80,20 @@ pnpm parse:check
 ```
 
 It prints per-chapter section counts and fails on structural anomalies (missed splits, leaked headings) — useful as a tripwire when a book grows or a new corpus arrives with slightly different heading conventions. Per-book `parser` overrides (custom chapter-title pattern, heuristic toggles) are the escape hatch for corpora the defaults don't fit.
+
+## Screenshots
+
+**A book's chapters as tiles** — the whole book on one screen:
+
+![Book view: 20 chapter tiles with section counts and content-type filter chips](docs/screenshots/book-chapters.png)
+
+**Inside a chapter, with a filter active** — non-matching sections dim but stay in place, so the spatial map survives filtering:
+
+![Chapter view: section tiles with the Interview Q&A filter active; matching tiles stand out at full opacity](docs/screenshots/sections-filtered.png)
+
+**The interview drill** — reading a filtered sequence: prev/next skips to the nearest matching section, across chapter boundaries:
+
+![Filtered reading view: "6 / 80 · filtered: interview", rails show only matching sections, model answers styled as "say this" callouts](docs/screenshots/interview-drill.png)
 
 ## How parsing works (and why it's weird)
 
