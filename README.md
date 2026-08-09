@@ -2,7 +2,7 @@
 
 Turn folders of markdown — saved LLM conversations, book drafts, course notes — into a **zoomable tile atlas**: chapters as tiles, sections as tiles, click to zoom into a reading view with neighboring sections on side rails and the chapter strip on top. Built for texts that are too big to scroll and too structured to flatten.
 
-Born from a real workflow: long ChatGPT conversations saved as markdown "books" (the bundled demo is one — a 20-module MuleSoft bootcamp generated while onboarding into an unfamiliar stack), then navigated spatially instead of linearly. Bookatlas powers the book library at [modernqacourse.com](https://modernqacourse.com).
+Born from a real workflow: long ChatGPT conversations saved as markdown "books" (the bundled demo is one — a 20-module MuleSoft bootcamp generated while onboarding into an unfamiliar stack), then navigated spatially instead of linearly. Bookatlas powers the book library at [modernQAcourse.com](https://modernqacourse.com).
 
 ## Features
 
@@ -25,6 +25,13 @@ pnpm dev
 ```
 
 Open http://localhost:3000 — the demo book (20 chapters, ~1,000 sections) renders from `demo/mulesoft-bootcamp/`.
+
+If port 3000 is already taken on your machine, pass any other port:
+
+```bash
+pnpm dev --port 4321       # dev server on http://localhost:4321
+pnpm build && pnpm start --port 4321   # production server
+```
 
 ## Making book files from an LLM conversation
 
