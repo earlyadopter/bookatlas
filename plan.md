@@ -16,9 +16,23 @@
 - [x] Phase 5: content-type filters (chips + filtered reading sequence, cross-chapter interview drill)
 - [x] Phase 6: polish (keyboard nav ←/→/Esc/[/], preamble block, excerpts, build green, commit)
 
+### v2: multi-corpus + open source
+
+- [x] second book onboarding — single-file mode, depth auto-detect (26 modernQAcourse books), collections config, asset route for covers
+- [x] open-source prep: renamed to Bookatlas, demo book bundled, public/local config split, MIT license, README
+- [x] no-raw-md guarantee: mdBody blanked after render, intro/preamble pre-rendered, verified over the wire (dev + prod)
+
+### Paid access (modernQAcourse mount — planned, not started)
+
+- [ ] entitlements table + magic-link login (grant function; manual CLI first)
+- [ ] Stripe Payment Link + webhook auto-grant as the primary path (manual = fallback)
+- [ ] free tier: chapter 1 of every book; paywall card past it (approved wording in chat 2026-08-08)
+- [ ] expiry reminder cron (T-14, T-2), 7-day grace, win-back at T+30
+- [ ] selective copy (prose non-selectable, code copyable), rate limit, per-account watermark hook
+
 ### Later
 
 - [ ] vitest suite for parseChapter (port parse-check assertions)
-- [ ] second book onboarding (exercise the config overrides)
 - [ ] search / ⌘K palette (CheatsheetClient pattern from modernQAcourse)
 - [ ] syntax highlighting for code fences
+- [ ] GIF/screenshot for README before publishing the repo
