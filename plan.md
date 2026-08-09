@@ -18,7 +18,6 @@
 
 ### v2: multi-corpus + open source
 
-- [x] second book onboarding — single-file mode, depth auto-detect (26 modernQAcourse books), collections config, asset route for covers
 - [x] open-source prep: renamed to Bookatlas, demo book bundled, public/local config split, MIT license, README
 - [x] no-raw-md guarantee: mdBody blanked after render, intro/preamble pre-rendered, verified over the wire (dev + prod)
 
