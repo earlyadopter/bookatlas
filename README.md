@@ -81,6 +81,12 @@ pnpm parse:check
 
 It prints per-chapter section counts and fails on structural anomalies (missed splits, leaked headings) — useful as a tripwire when a book grows or a new corpus arrives with slightly different heading conventions. Per-book `parser` overrides (custom chapter-title pattern, heuristic toggles) are the escape hatch for corpora the defaults don't fit.
 
+## Guides
+
+- **[Self-hosting](docs/self-hosting.md)** — deploy your own instance (long-running server or Vercel) with your own books, private libraries via `books.config.local.json`, opt-in analytics
+- **[Embedding](docs/embedding.md)** — put the atlas inside a site you already run: run-alongside vs. vendoring the UI, with the recipe from the modernqacourse.com reference integration
+- **[Parser overrides & `parse:check`](docs/parser-overrides.md)** — onboarding a corpus the default heuristics don't fit: the boundary rules, every override, and what the checker's failures mean
+
 ## Screenshots
 
 **A book's chapters as tiles** — the whole book on one screen:
@@ -104,6 +110,8 @@ LLM-exported markdown lies about structure: the first section of a chapter might
 - All markdown is rendered to HTML **server-side**; raw `.md` content is never serialized to the client, exposed by any route, or reachable through the asset endpoint (images only, extension-allowlisted).
 - Content outside the repo is read at request time — deploy needs the book directories on the server's filesystem.
 - Routes are dynamic (`force-dynamic`); there is intentionally no static export of content.
+
+Full walkthrough: [docs/self-hosting.md](docs/self-hosting.md).
 
 ## License
 
