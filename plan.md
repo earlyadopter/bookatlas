@@ -37,7 +37,7 @@ make self-hosting and embedding viable without hand-holding.
 - [ ] search / ⌘K palette (CheatsheetClient pattern from modernQAcourse)
 - [ ] syntax highlighting for code fences
 - [ ] GIF/screenshot for README before publishing the repo
-- [ ] parse:check: respect parser.fileOrder (loadBook orders/filters by it; the checker still sorts all filenames)
+- [x] parse:check: respect parser.fileOrder (loadBook orders/filters by it; the checker still sorts all filenames)
 - [x] embed-friendly component APIs — ChapterStrip should take precomputed hrefs instead of importing lib/slugs (the modernQAcourse vendoring had to rewrite it; makes the docs/embedding.md recipe near drop-in)
 - [x] publishable core package — extract lib/ (parsers, tags, slugs, nav) + interaction components into an npm package embedders can depend on instead of vendoring (builds on the embed-friendly APIs ticket)
 - [ ] npm publish @bookatlas/core (account action; until then consumers use a git dependency + transpilePackages)

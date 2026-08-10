@@ -110,10 +110,8 @@ and sections are going missing.
 Chapter order is filename sort (`module-01.md … module-12.md`) by default.
 `fileOrder` replaces it with an explicit list — and doubles as an allowlist:
 files in the folder but not in the list are excluded from the book. Useful
-for corpora with unsortable names, or to hide a draft chapter.
-
-(Known gap: `parse:check` currently ignores `fileOrder` and checks all files
-in sorted order — tracked in plan.md.)
+for corpora with unsortable names, or to hide a draft chapter. `parse:check`
+applies the same ordering rules, so what it checks is what renders.
 
 ## Workflow for onboarding a new corpus
 

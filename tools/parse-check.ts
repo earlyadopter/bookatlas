@@ -27,10 +27,17 @@ async function main() {
       const parsed = parseSingleFileBook(fs.readFileSync(file, "utf8"));
       chapters = parsed.chapters.map((ch) => ({ ...ch, file }));
     } else {
-      const files = fs
+      let files = fs
         .readdirSync(config.path)
-        .filter((f) => f.endsWith(".md") && !f.startsWith("."))
-        .sort((a, b) => a.localeCompare(b));
+        .filter((f) => f.endsWith(".md") && !f.startsWith("."));
+      // Same ordering rules as loadBook: an explicit fileOrder replaces the
+      // filename sort and acts as an allowlist.
+      if (config.parser?.fileOrder) {
+        const order = config.parser.fileOrder;
+        files = order.filter((f) => files.includes(f));
+      } else {
+        files.sort((a, b) => a.localeCompare(b));
+      }
       chapters = files.map((f) => {
         const file = path.join(config.path, f);
         return { ...parseChapter(f, fs.readFileSync(file, "utf8"), config.parser), file };
