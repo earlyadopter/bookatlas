@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { navigateWithTransition } from "@/components/transitions";
+import { navigateWithTransition } from "./transitions";
 
 // Keyboard map for the zoom view: ←/→ prev/next sub-chapter (filter-aware,
 // the hrefs are computed server-side), Esc/↑ up to the chapter grid,

@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBook } from "@/lib/loadBook";
-import { chapterHref } from "@/lib/slugs";
-import { matchesFilter, parseFilter } from "@/lib/nav";
-import { FilterChips } from "@/components/FilterChips";
+import { chapterHref, matchesFilter, parseFilter } from "@bookatlas/core";
+import { FilterChips } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";

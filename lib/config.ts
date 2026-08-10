@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { BookConfig } from "./types";
+import type { BookConfig } from "@bookatlas/core";
 
 // Book registry. Two files, merged at load:
 //   books.config.json        — committed; the demo book lives here

@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      marked:
-        specifier: ^17.0.1
-        version: 17.0.6
+      '@bookatlas/core':
+        specifier: workspace:*
+        version: link:packages/core
       next:
         specifier: 16.1.6
         version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -36,6 +36,21 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/core:
+    dependencies:
+      marked:
+        specifier: ^17.0.1
+        version: 17.0.6
+      next:
+        specifier: '>=15'
+        version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: '>=19'
+        version: 19.2.4
+      react-dom:
+        specifier: '>=19'
+        version: 19.2.4(react@19.2.4)
 
 packages:
 

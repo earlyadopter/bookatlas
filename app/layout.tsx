@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
-import { RouteListener } from "@/components/transitions";
+import { RouteListener } from "@bookatlas/core/components";
 
 const displayFont = Newsreader({
   subsets: ["latin"],

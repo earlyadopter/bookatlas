@@ -18,26 +18,44 @@ shared nav, a paywall, or content that isn't markdown files on disk.
 
 ## Option 2: vendor the UI into your own Next.js app
 
-This is the modernqacourse.com path: a subset of Bookatlas's components was
-copied into the host app as first-party code, adapted to the host's data
-model, and mounted as ordinary route groups. There is no npm package today —
-you are taking ownership of the copied files. The trade is real: full control
-over data, auth, and theming, in exchange for manually re-applying any
-upstream fixes to what you copied.
+This is the modernqacourse.com path: the atlas lives *inside* your app —
+your routes, your data pipeline, your auth — with Bookatlas providing the
+parsers and interaction components.
 
-### What to copy
+### Preferred: depend on `@bookatlas/core`
+
+The reusable pieces live in [`packages/core`](../packages/core) as the
+`@bookatlas/core` package — parsers and helpers from `.`, interaction
+components from `./components`. The components are **href-agnostic**
+(`ChapterStrip` takes precomputed `{ href, num, title, current }` items,
+`KeyNav` takes five hrefs), so they drop into any route shape without
+surgery. It ships TypeScript source: add
+`transpilePackages: ["@bookatlas/core"]` to your `next.config.ts`, and until
+it's on npm, consume it as a git dependency. See the
+[package README](../packages/core/README.md) for the API contract.
+
+What the package does *not* carry yet is the CSS — copy the atlas block from
+`app/globals.css` and adapt it (step 1 below).
+
+### Fallback: what to vendor
+
+If you'd rather own the files outright (the original modernqacourse.com
+approach — it predates the package), the trade is manually re-applying
+upstream fixes to whatever you copied:
 
 The interaction layer — it's small and self-contained:
 
-- **`components/transitions.tsx`** — the View Transitions zoom morph
-  (`TransitionLink`, the router listener). The heart of the feel.
-- **`components/KeyNav.tsx`** — the keyboard map (`←`/`→`, `Esc`/`↑`, `[`/`]`).
-- **`components/ChapterStrip.tsx`** — the chapter rail on top of the reading
-  view.
-- **`components/FilterChips.tsx`** — only if you want content-type filters.
+- **`packages/core/src/components/transitions.tsx`** — the View Transitions
+  zoom morph (`TransitionLink`, the router listener). The heart of the feel.
+- **`packages/core/src/components/KeyNav.tsx`** — the keyboard map
+  (`←`/`→`, `Esc`/`↑`, `[`/`]`).
+- **`packages/core/src/components/ChapterStrip.tsx`** — the chapter rail on
+  top of the reading view.
+- **`packages/core/src/components/FilterChips.tsx`** — only if you want
+  content-type filters.
 - **The atlas CSS block from `app/globals.css`** — grids, tiles, rails, stage.
-- **A parser from `lib/`** — only if your content is markdown books in
-  Bookatlas's shape (`parseChapter` for chapter-file books,
+- **A parser from `packages/core/src/`** — only if your content is markdown
+  books in Bookatlas's shape (`parseChapter` for chapter-file books,
   `parseSingleFileBook` for one-file books). If your site already has a
   content pipeline, keep it and skip the parsers entirely.
 
@@ -62,10 +80,9 @@ from the host's existing content tree — no book registry at all.
    keep the three levels — book/library grid → chapter grid → section stage —
    with every zoom state a bookmarkable URL. That's what makes the morph and
    browser back/forward feel right.
-4. **Decouple components from Bookatlas's slug helpers.** `ChapterStrip`
-   imports `chapterHref` from `lib/slugs`; the reference rewrote it to accept
-   precomputed items (`{ href, num, title, current }`) so the host computes
-   hrefs its own way. Expect to do the same to anything that builds links.
+4. **Compute hrefs yourself, pass them in.** The components take precomputed
+   hrefs (`ChapterStrip` items, `KeyNav`'s five targets) — your app decides
+   the URL shape, typically in the server components that assemble each page.
 5. **Compose your own chrome.** Render your site's topbar/footer around the
    atlas `<main>` per page; drop Bookatlas's `ThemeToggle` if your site has
    theming.
@@ -83,14 +100,12 @@ from the host's existing content tree — no book registry at all.
 
 ### Known friction (so you can budget for it)
 
-- The components were extracted from an app, not designed as a library —
-  expect light API surgery (step 4) rather than drop-in reuse. Making them
-  embed-friendly upstream is on the roadmap (see plan.md).
-- A vendored parser is a fork: upstream parsing fixes don't reach you
-  automatically.
-- If you copy pieces into different route groups, give the shared files one
-  home (a `components/atlas/` directory) rather than importing across route
-  groups.
+- The CSS is not bundled with the package yet — copying and adapting the
+  atlas block from `app/globals.css` is a real (one-time) chunk of the work.
+- If you vendor instead of depending on the package, a vendored parser is a
+  fork: upstream parsing fixes don't reach you automatically. Give copied
+  files one home (a `components/atlas/` directory) rather than importing
+  across route groups.
 
 ### Attribution
 

@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBook } from "@/lib/loadBook";
-import { subHref } from "@/lib/slugs";
-import { matchesFilter, parseFilter } from "@/lib/nav";
-import { ChapterStrip } from "@/components/ChapterStrip";
-import { FilterChips } from "@/components/FilterChips";
+import { chapterHref, subHref, matchesFilter, parseFilter } from "@bookatlas/core";
+import { ChapterStrip, FilterChips, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { TransitionLink } from "@/components/transitions";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +22,11 @@ export default async function ChapterPage({
   if (!chapter) notFound();
   const filter = parseFilter(f);
 
-  const stripChapters = book.chapters.map((c) => ({
-    slug: c.slug,
-    number: c.number,
+  const stripItems = book.chapters.map((c) => ({
+    href: chapterHref(book.id, c.slug, filter ?? undefined),
+    num: String(c.number).padStart(2, "0"),
     title: c.title,
-    subCount: c.subchapters.length
+    current: c.slug === chapter.slug
   }));
 
   return (
@@ -42,12 +39,7 @@ export default async function ChapterPage({
         <Link href={`/b/${book.id}`} className="topbar-book">{book.title}</Link>
         <ThemeToggle />
       </header>
-      <ChapterStrip
-        bookId={book.id}
-        chapters={stripChapters}
-        currentSlug={chapter.slug}
-        filter={filter ?? undefined}
-      />
+      <ChapterStrip items={stripItems} />
       <h1 className="page-title">{chapter.fullTitle}</h1>
       <FilterChips
         basePath={`/b/${book.id}/${chapter.slug}`}

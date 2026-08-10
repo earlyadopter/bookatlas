@@ -1,9 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadBooksConfig } from "../lib/config";
-import { parseChapter, type ParsedChapter } from "../lib/parseChapter";
-import { parseSingleFileBook } from "../lib/parseSingleFileBook";
-import type { Tag } from "../lib/types";
+import { parseChapter, parseSingleFileBook, type ParsedChapter, type Tag } from "@bookatlas/core";
 
 // CLI tripwire for the corpus-tuned parsers: prints per-chapter stats and
 // exits 1 on structural anomalies (missed splits, leaked headings, number

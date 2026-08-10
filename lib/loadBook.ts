@@ -2,11 +2,9 @@ import fs from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { cache } from "react";
-import type { Book, Chapter, Tag } from "./types";
+import type { Book, Chapter, Tag } from "@bookatlas/core";
 import { findBookConfig, loadBooksConfig } from "./config";
-import { parseChapter } from "./parseChapter";
-import { parseSingleFileBook } from "./parseSingleFileBook";
-import { renderPlainHtml, renderSubChapterHtml } from "./renderMarkdown";
+import { parseChapter, parseSingleFileBook, renderPlainHtml, renderSubChapterHtml } from "@bookatlas/core";
 
 // Sources re-read + re-parse only when the file's mtime changes, so editing a
 // book in Dropbox shows up on browser refresh without a restart.

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Tag } from "@/lib/types";
+import type { Tag } from "../types";
 
 const LABELS: { key: Tag; label: string }[] = [
   { key: "interview", label: "Interview Q&A" },

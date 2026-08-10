@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { TransitionLink } from "@/components/transitions";
 import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 import { getBook } from "@/lib/loadBook";
-import { chapterHref, subHref } from "@/lib/slugs";
-import { getPrevNext, matchesFilter, parseFilter } from "@/lib/nav";
-import { ChapterStrip } from "@/components/ChapterStrip";
-import { KeyNav } from "@/components/KeyNav";
+import { chapterHref, subHref, getPrevNext, matchesFilter, parseFilter } from "@bookatlas/core";
+import { ChapterStrip, KeyNav, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
@@ -78,11 +75,11 @@ export default async function SubChapterPage({
   const prevChapter = chapterIdx > 0 ? book.chapters[chapterIdx - 1] : null;
   const nextChapter = chapterIdx < book.chapters.length - 1 ? book.chapters[chapterIdx + 1] : null;
 
-  const stripChapters = book.chapters.map((c) => ({
-    slug: c.slug,
-    number: c.number,
+  const stripItems = book.chapters.map((c) => ({
+    href: chapterHref(book.id, c.slug, fParam),
+    num: String(c.number).padStart(2, "0"),
     title: c.title,
-    subCount: c.subchapters.length
+    current: c.slug === chapter.slug
   }));
 
   return (
@@ -102,12 +99,7 @@ export default async function SubChapterPage({
         <Link href={`/b/${book.id}`} className="topbar-book">{book.title}</Link>
         <ThemeToggle />
       </header>
-      <ChapterStrip
-        bookId={book.id}
-        chapters={stripChapters}
-        currentSlug={chapter.slug}
-        filter={fParam}
-      />
+      <ChapterStrip items={stripItems} />
       <div className="zoom">
         {/* column-reverse: nearest-first DOM order renders bottom-up, so the
             rail starts scrolled to the neighbor adjacent to the article. */}

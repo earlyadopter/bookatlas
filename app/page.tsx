@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listBooks } from "@/lib/loadBook";
-import { bookHref } from "@/lib/slugs";
+import { bookHref } from "@bookatlas/core";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";

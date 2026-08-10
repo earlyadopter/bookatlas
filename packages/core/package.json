@@ -1,0 +1,20 @@
+{
+  "name": "@bookatlas/core",
+  "version": "0.1.0",
+  "description": "Bookatlas core: markdown book parsers, nav/slug helpers, and the zoomable-atlas interaction components",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./components": "./src/components/index.ts",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "marked": "^17.0.1"
+  },
+  "peerDependencies": {
+    "next": ">=15",
+    "react": ">=19",
+    "react-dom": ">=19"
+  }
+}
