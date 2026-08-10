@@ -42,3 +42,4 @@ make self-hosting and embedding viable without hand-holding.
 - [x] publishable core package — extract lib/ (parsers, tags, slugs, nav) + interaction components into an npm package embedders can depend on instead of vendoring (builds on the embed-friendly APIs ticket)
 - [ ] npm publish @bookatlas/core (account action; until then consumers use a git dependency + transpilePackages)
 - [ ] ship the atlas stylesheet with @bookatlas/core (tokens + strip/stage/tile classes) so embedders stop copying from app/globals.css
+- [ ] second demo book, unrelated subject, so the landing doesn't read MuleSoft-specific — candidate: a "Bookatlas Handbook" assembled from the repo's own guides (needs restructuring into numbered-section book shape; content review before it goes public)

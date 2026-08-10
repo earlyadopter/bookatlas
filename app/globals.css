@@ -259,6 +259,32 @@ a {
   opacity: 0.35;
 }
 
+/* Demo marker: the bundled book demonstrates the format — its subject is
+   incidental, and the badge keeps first-time visitors from reading the
+   landing page as MuleSoft-specific. */
+.book-card.demo {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--g) 55%, var(--line));
+}
+
+.book-card.demo .eyebrow {
+  padding-right: 4rem; /* keep clear of the absolute DEMO badge */
+}
+
+.demo-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-family: var(--font-mono-stack);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--bg);
+  background: var(--g);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
 /* ── Library ──────────────────────────────────────────────────────────── */
 
 .book-grid {

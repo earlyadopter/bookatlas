@@ -7,6 +7,9 @@ export const dynamic = "force-dynamic";
 
 const GITHUB_URL = "https://github.com/earlyadopter/bookatlas";
 
+// Books that are format demos, not the product's subject — badged on the card.
+const DEMO_BOOK_IDS = new Set(["mulesoft-bootcamp"]);
+
 export default async function LibraryPage() {
   const books = await listBooks();
 
@@ -37,8 +40,9 @@ export default async function LibraryPage() {
 
       <h2 className="page-title">Try it — the demo book, live</h2>
       <p className="hero-note">
-        A 20-module MuleSoft bootcamp, generated in conversation with ChatGPT and rendered straight
-        from its markdown files. Click a book, then a chapter, then any tile. Use{" "}
+        The subject is incidental — any folder of markdown gets this treatment. This demo happens
+        to be a 20-module MuleSoft bootcamp, generated in conversation with ChatGPT and rendered
+        straight from its markdown files. Click the book, then a chapter, then any tile. Use{" "}
         <kbd>←</kbd>/<kbd>→</kbd> to read through.
       </p>
       <div className="book-grid">
@@ -48,9 +52,10 @@ export default async function LibraryPage() {
             <Link
               key={book.id}
               href={bookHref(book.id)}
-              className="book-card"
+              className={DEMO_BOOK_IDS.has(book.id) ? "book-card demo" : "book-card"}
               style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
             >
+              {DEMO_BOOK_IDS.has(book.id) ? <span className="demo-badge">DEMO</span> : null}
               {book.coverUrl ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img className="book-card-cover" src={book.coverUrl} alt="" />
