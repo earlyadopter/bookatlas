@@ -21,7 +21,12 @@ export function parseNote(token: string): ParsedNote | null {
   return { letter, accidental, semitone };
 }
 
-/** "C E G B♭" → ascending absolute semitones from an implicit low C. */
+/**
+ * "C E G B♭" / "C C G G A A G" → absolute semitones by melodic contour:
+ * a repeated note stays on the same pitch, and every move takes the nearest
+ * octave (ties break upward) — so chord spellings stack upward while
+ * melodies stay in register instead of climbing octaves.
+ */
 export function parseNoteSequence(text: string): { notes: ParsedNote[]; absolute: number[] } | null {
   const tokens = text.trim().split(/[\s,–-]+/).filter(Boolean);
   if (tokens.length < 2 || tokens.length > 10) return null;
@@ -32,14 +37,23 @@ export function parseNoteSequence(text: string): { notes: ParsedNote[]; absolute
     notes.push(n);
   }
   const absolute: number[] = [];
-  let octave = 0;
-  let prev = -1;
   for (const n of notes) {
-    if (n.semitone <= prev % 12 && prev !== -1) octave++;
-    const abs = octave * 12 + n.semitone;
-    absolute.push(abs <= prev ? abs + 12 : abs);
-    prev = absolute[absolute.length - 1];
-    octave = Math.floor(prev / 12);
+    if (absolute.length === 0) {
+      absolute.push(n.semitone);
+      continue;
+    }
+    const prev = absolute[absolute.length - 1];
+    const up = prev + ((n.semitone - prev) % 12 + 12) % 12;
+    const down = up - 12;
+    // Melodic-register rule: repeats stay put; leaps up to a fifth go up,
+    // anything wider resolves downward (C→G reads as the rising fifth).
+    absolute.push(up === prev ? prev : up - prev <= 7 ? up : down);
+  }
+  // Normalize into a non-negative register.
+  const min = Math.min(...absolute);
+  if (min < 0) {
+    const shift = Math.ceil(-min / 12) * 12;
+    for (let i = 0; i < absolute.length; i++) absolute[i] += shift;
   }
   return { notes, absolute };
 }
@@ -276,8 +290,9 @@ function staffGroup(
 export type MusicFigureOpts = KeyboardDiagramOpts;
 
 /**
- * Combined textbook figure: treble-staff notation + keyboard diagram.
- * Third-stacks render as a chord; wider sequences render note-by-note.
+ * Textbook figure. Third-stacks (chord spellings) pair stacked staff
+ * notation with a keyboard diagram; anything else is a melody/sequence and
+ * renders as staff notation alone, note by note.
  */
 export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): string | null {
   const seq = parseNoteSequence(noteText);
@@ -287,6 +302,27 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
   const stacked = staffNotes.length <= 6 && diffs.every((d) => d >= 1 && d <= 3);
   const staff = staffGroup(staffNotes, stacked);
 
+  const captionH = opts.caption || opts.figureLabel ? 32 : 6;
+  const caption = (contentH: number, parts: string[]) => {
+    if (!opts.caption && !opts.figureLabel) return;
+    const label = opts.figureLabel ? `<tspan font-weight="700">${esc(opts.figureLabel)}</tspan>&#160;&#160;` : "";
+    parts.push(
+      `<text x="2" y="${contentH + 22}" ${FONT} font-size="15" fill="#000">${label}${esc(opts.caption ?? "")}</text>`
+    );
+  };
+
+  if (!stacked) {
+    // Melody: staff only.
+    const height = staff.height + captionH;
+    const parts = [
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${staff.width} ${height}" width="${staff.width}" height="${height}">`,
+      staff.svg
+    ];
+    caption(staff.height, parts);
+    parts.push(`</svg>`);
+    return parts.join("");
+  }
+
   const keyboard = keyboardDiagramSvg(noteText, {});
   if (!keyboard) return null;
   const kbInner = keyboard.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
@@ -295,7 +331,6 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
 
   const GAP = 26;
   const contentH = Math.max(staff.height, kbH);
-  const captionH = opts.caption || opts.figureLabel ? 32 : 6;
   const width = staff.width + GAP + kbW;
   const height = contentH + captionH;
 
@@ -308,12 +343,7 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
   );
   parts.push(`<g transform="translate(0 ${staffY})">${staff.svg}</g>`);
   parts.push(`<g transform="translate(${staff.width + GAP} ${kbY})">${kbInner}</g>`);
-  if (opts.caption || opts.figureLabel) {
-    const label = opts.figureLabel ? `<tspan font-weight="700">${esc(opts.figureLabel)}</tspan>&#160;&#160;` : "";
-    parts.push(
-      `<text x="2" y="${contentH + 22}" ${FONT} font-size="15" fill="#000">${label}${esc(opts.caption ?? "")}</text>`
-    );
-  }
+  caption(contentH, parts);
   parts.push(`</svg>`);
   return parts.join("");
 }
