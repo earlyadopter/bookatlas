@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { musicFigureSvg, parseNoteSequence, parseProgression, progressionDiagramSvg } from "@bookatlas/core";
+import { chordSymbolNotes, musicFigureSvg, parseNoteSequence, parseProgression, progressionDiagramSvg } from "@bookatlas/core";
 
 // Generates textbook-style music figures (SVG) for a folder of chapter .md
 // files and injects standard markdown image refs after the source lines.
@@ -20,11 +20,16 @@ const CHORD_LABEL_RE = /^[A-G][#♯b♭]?(?:maj|min|m|dim|aug|sus[24]?|add[0-9]+
 
 type Figure = { afterLine: number; svg: string; alt: string };
 
+/** Dedup key: the notes themselves, separators normalized away. */
+function normalizeNotes(text: string): string {
+  return text.trim().split(/(?:\s*(?:→|->|—>)\s*|[\s,–-]+)/).filter(Boolean).join(" ");
+}
+
 function detectFigures(lines: string[], chapterNum: number, startSerial: { n: number }): Figure[] {
   const figures: Figure[] = [];
-  // One figure per distinct content per chapter — the text re-spells the
-  // same chords for reinforcement; the figure only needs to appear once.
-  const seen = new Set<string>();
+  // One figure per distinct musical content per SECTION (the atlas is read
+  // nonlinearly — a repeat in a later section gets its own figure again).
+  let seen = new Set<string>();
   let inFence = false;
   let lastChordHeading: string | null = null;
   let lastChordHeadingLine = -10;
@@ -37,9 +42,11 @@ function detectFigures(lines: string[], chapterNum: number, startSerial: { n: nu
     }
     if (inFence) continue;
 
-    const heading = line.match(/^#{1,6}\s+(.+)$/);
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
-      const text = heading[1].trim();
+      const text = heading[2].trim();
+      // H1/H2 delimit sections — reset the dedup window.
+      if (heading[1].length <= 2) seen = new Set<string>();
       if (CHORD_LABEL_RE.test(text)) {
         lastChordHeading = text;
         lastChordHeadingLine = i;
@@ -49,28 +56,45 @@ function detectFigures(lines: string[], chapterNum: number, startSerial: { n: nu
       continue;
     }
 
-    const makeFigure = (svg: string | null, alt: string) => {
-      if (!svg || seen.has(alt)) return;
-      seen.add(alt);
+    const makeFigure = (svg: string | null, alt: string, dedupKey?: string) => {
+      const key = dedupKey ?? alt;
+      if (!svg || seen.has(key)) return;
+      seen.add(key);
       startSerial.n++;
       figures.push({ afterLine: i, svg, alt });
     };
     const figureLabel = () => `Figure ${chapterNum}.${startSerial.n + 1}`;
 
+    // **Am** / **E7** — a standalone chord symbol spells itself.
+    const bare = line.match(/^\*\*([A-G][#♯b♭]?[a-zA-Z0-9°ø+]{1,7})\*\*$/);
+    if (bare) {
+      const spelled = chordSymbolNotes(bare[1]);
+      if (spelled) {
+        const caption = `${bare[1]} = ${spelled}`;
+        makeFigure(musicFigureSvg(spelled, { caption, figureLabel: figureLabel() }), caption, spelled);
+        continue;
+      }
+    }
+
     // **Chord = notes**
     const eq = line.match(/^\*\*([^*=]{1,14}?)\s*=\s*([A-Ga-g#♯b♭ ,–-]{3,40})\*\*$/);
     if (eq && CHORD_LABEL_RE.test(eq[1].trim()) && parseNoteSequence(eq[2])) {
       const caption = `${eq[1].trim()} = ${eq[2].trim()}`;
-      makeFigure(musicFigureSvg(eq[2], { caption, figureLabel: figureLabel() }), caption);
+      makeFigure(musicFigureSvg(eq[2], { caption, figureLabel: figureLabel() }), caption, normalizeNotes(eq[2]));
       continue;
     }
 
     // **C E G B** (bare note run; captioned by a nearby chord heading)
-    const run = line.match(/^\*\*([A-Ga-g#♯b♭ ,–-]{3,40})\*\*$/);
+    const run = line.match(/^\*\*([A-Ga-g#♯b♭ ,–→>-]{3,40})\*\*$/);
     if (run && parseNoteSequence(run[1])) {
       const near = lastChordHeading && i - lastChordHeadingLine <= 4 ? lastChordHeading : null;
       const caption = near ? `${near} = ${run[1].trim()}` : run[1].trim();
-      makeFigure(musicFigureSvg(run[1], { caption, figureLabel: figureLabel() }), caption);
+      const isMotion = /→|->/.test(run[1]);
+      makeFigure(
+        musicFigureSvg(run[1], { caption, figureLabel: figureLabel(), sequence: isMotion }),
+        caption,
+        normalizeNotes(run[1])
+      );
       continue;
     }
 

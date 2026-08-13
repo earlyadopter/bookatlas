@@ -28,7 +28,7 @@ export function parseNote(token: string): ParsedNote | null {
  * melodies stay in register instead of climbing octaves.
  */
 export function parseNoteSequence(text: string): { notes: ParsedNote[]; absolute: number[] } | null {
-  const tokens = text.trim().split(/[\s,–-]+/).filter(Boolean);
+  const tokens = text.trim().split(/(?:\s*(?:→|->|—>)\s*|[\s,–-]+)/).filter(Boolean);
   if (tokens.length < 2 || tokens.length > 10) return null;
   const notes: ParsedNote[] = [];
   for (const t of tokens) {
@@ -287,7 +287,10 @@ function staffGroup(
   return { svg: parts.join(""), width, height, midY: (topPad + bottomLineY) / 2 };
 }
 
-export type MusicFigureOpts = KeyboardDiagramOpts;
+export type MusicFigureOpts = KeyboardDiagramOpts & {
+  /** Force melody rendering even for third-stacks (e.g. arrow-notated motion). */
+  sequence?: boolean;
+};
 
 /**
  * Textbook figure. Third-stacks (chord spellings) pair stacked staff
@@ -299,7 +302,7 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
   if (!seq) return null;
   const staffNotes = toStaffNotes(seq);
   const diffs = staffNotes.slice(1).map((n, i) => n.step - staffNotes[i].step);
-  const stacked = staffNotes.length <= 6 && diffs.every((d) => d >= 1 && d <= 3);
+  const stacked = !opts.sequence && staffNotes.length <= 6 && diffs.every((d) => d >= 1 && d <= 3);
   const staff = staffGroup(staffNotes, stacked);
 
   const captionH = opts.caption || opts.figureLabel ? 32 : 6;
@@ -346,6 +349,69 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
   caption(contentH, parts);
   parts.push(`</svg>`);
   return parts.join("");
+}
+
+// ── Chord symbols ───────────────────────────────────────────────────────
+// "Am" → "A C E": degree/semitone formulas spelled with correct letters
+// (thirds advance the letter; accidental = offset from the natural note).
+
+const QUALITY_FORMULAS: Record<string, [number, number][]> = {
+  "": [[1, 0], [3, 4], [5, 7]],
+  maj: [[1, 0], [3, 4], [5, 7]],
+  m: [[1, 0], [3, 3], [5, 7]],
+  min: [[1, 0], [3, 3], [5, 7]],
+  dim: [[1, 0], [3, 3], [5, 6]],
+  "°": [[1, 0], [3, 3], [5, 6]],
+  o: [[1, 0], [3, 3], [5, 6]],
+  aug: [[1, 0], [3, 4], [5, 8]],
+  "+": [[1, 0], [3, 4], [5, 8]],
+  "7": [[1, 0], [3, 4], [5, 7], [7, 10]],
+  maj7: [[1, 0], [3, 4], [5, 7], [7, 11]],
+  m7: [[1, 0], [3, 3], [5, 7], [7, 10]],
+  min7: [[1, 0], [3, 3], [5, 7], [7, 10]],
+  mmaj7: [[1, 0], [3, 3], [5, 7], [7, 11]],
+  dim7: [[1, 0], [3, 3], [5, 6], [7, 9]],
+  m7b5: [[1, 0], [3, 3], [5, 6], [7, 10]],
+  "ø7": [[1, 0], [3, 3], [5, 6], [7, 10]],
+  "ø": [[1, 0], [3, 3], [5, 6], [7, 10]],
+  "6": [[1, 0], [3, 4], [5, 7], [6, 9]],
+  m6: [[1, 0], [3, 3], [5, 7], [6, 9]],
+  "9": [[1, 0], [3, 4], [5, 7], [7, 10], [9, 14]],
+  maj9: [[1, 0], [3, 4], [5, 7], [7, 11], [9, 14]],
+  m9: [[1, 0], [3, 3], [5, 7], [7, 10], [9, 14]],
+  add9: [[1, 0], [3, 4], [5, 7], [9, 14]],
+  sus2: [[1, 0], [2, 2], [5, 7]],
+  sus4: [[1, 0], [4, 5], [5, 7]]
+};
+
+const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
+const LETTER_SEMITONE = [0, 2, 4, 5, 7, 9, 11];
+
+/**
+ * Spells a chord symbol as note names ("Am7" → "A C E G"), or null when the
+ * symbol has no quality suffix (a bare "A" is ambiguous: note or chord).
+ */
+export function chordSymbolNotes(symbol: string): string | null {
+  const m = symbol.trim().match(/^([A-G])([#♯b♭]?)(.+)$/);
+  if (!m) return null;
+  const quality = m[3].trim();
+  const formula = QUALITY_FORMULAS[quality];
+  if (!formula) return null;
+  const rootLetterIdx = LETTERS.indexOf(m[1]);
+  const rootSemitone =
+    LETTER_SEMITONE[rootLetterIdx] + (m[2] === "#" || m[2] === "♯" ? 1 : m[2] === "b" || m[2] === "♭" ? -1 : 0);
+
+  const out: string[] = [];
+  for (const [degree, semis] of formula) {
+    const letterIdx = (rootLetterIdx + degree - 1) % 7;
+    const octaves = Math.floor((rootLetterIdx + degree - 1) / 7);
+    const natural = LETTER_SEMITONE[letterIdx] + octaves * 12;
+    const target = rootSemitone + semis;
+    const diff = target - natural;
+    if (diff < -1 || diff > 1) return null; // would need a double accidental
+    out.push(`${LETTERS[letterIdx]}${diff === 1 ? "♯" : diff === -1 ? "♭" : ""}`);
+  }
+  return out.join(" ");
 }
 
 const ROMAN_RE = /^(i{1,3}|iv|v|vi{0,2}|I{1,3}|IV|V|VI{0,2})([°oø]|dim)?[0-9]?$/;

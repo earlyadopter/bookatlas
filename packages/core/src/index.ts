@@ -19,6 +19,7 @@ export {
   type FlatSub
 } from "./nav";
 export {
+  chordSymbolNotes,
   keyboardDiagramSvg,
   musicFigureSvg,
   progressionDiagramSvg,
