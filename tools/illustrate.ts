@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { keyboardDiagramSvg, parseNoteSequence, parseProgression, progressionDiagramSvg } from "@bookatlas/core";
+import { musicFigureSvg, parseNoteSequence, parseProgression, progressionDiagramSvg } from "@bookatlas/core";
 
 // Generates textbook-style music figures (SVG) for a folder of chapter .md
 // files and injects standard markdown image refs after the source lines.
@@ -61,7 +61,7 @@ function detectFigures(lines: string[], chapterNum: number, startSerial: { n: nu
     const eq = line.match(/^\*\*([^*=]{1,14}?)\s*=\s*([A-Ga-g#♯b♭ ,–-]{3,40})\*\*$/);
     if (eq && CHORD_LABEL_RE.test(eq[1].trim()) && parseNoteSequence(eq[2])) {
       const caption = `${eq[1].trim()} = ${eq[2].trim()}`;
-      makeFigure(keyboardDiagramSvg(eq[2], { caption, figureLabel: figureLabel() }), caption);
+      makeFigure(musicFigureSvg(eq[2], { caption, figureLabel: figureLabel() }), caption);
       continue;
     }
 
@@ -70,7 +70,7 @@ function detectFigures(lines: string[], chapterNum: number, startSerial: { n: nu
     if (run && parseNoteSequence(run[1])) {
       const near = lastChordHeading && i - lastChordHeadingLine <= 4 ? lastChordHeading : null;
       const caption = near ? `${near} = ${run[1].trim()}` : run[1].trim();
-      makeFigure(keyboardDiagramSvg(run[1], { caption, figureLabel: figureLabel() }), caption);
+      makeFigure(musicFigureSvg(run[1], { caption, figureLabel: figureLabel() }), caption);
       continue;
     }
 

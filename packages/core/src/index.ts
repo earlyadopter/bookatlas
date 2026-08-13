@@ -20,6 +20,7 @@ export {
 } from "./nav";
 export {
   keyboardDiagramSvg,
+  musicFigureSvg,
   progressionDiagramSvg,
   parseNote,
   parseNoteSequence,

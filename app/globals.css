@@ -320,6 +320,12 @@ a {
   color: var(--muted);
 }
 
+/* Figures and images inside rendered content scale to the column. */
+.doc img {
+  max-width: 100%;
+  height: auto;
+}
+
 /* ── Book overview: part/group sections ───────────────────────────────── */
 
 .book-section { margin-top: 6px; }

@@ -165,6 +165,159 @@ export function progressionDiagramSvg(items: string[], opts: ProgressionDiagramO
   return parts.join("");
 }
 
+// ── Staff notation ──────────────────────────────────────────────────────
+// Whole-note chords/sequences on a treble staff: note heads with the
+// classic rotated-hole look, ♯/♭ accidentals, ledger lines, clef glyph.
+
+const LETTER_STEP: Record<string, number> = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
+const STAFF_GAP = 10; // distance between staff lines
+// Diatonic step of E4, the bottom treble line, with C4 = step 28.
+const E4_STEP = 30;
+
+type StaffNote = { step: number; accidental: "" | "#" | "b" };
+
+function toStaffNotes(seq: { notes: ParsedNote[]; absolute: number[] }): StaffNote[] {
+  return seq.notes.map((n, i) => ({
+    step: Math.floor(seq.absolute[i] / 12) * 7 + LETTER_STEP[n.letter] + 28,
+    accidental: n.accidental
+  }));
+}
+
+function staffGroup(
+  staffNotes: StaffNote[],
+  stacked: boolean
+): { svg: string; width: number; height: number; midY: number } {
+  const S = STAFF_GAP;
+  // Vertical envelope: staff spans 4*S; leave headroom for ledger lines.
+  const topPad = 3 * S;
+  const bottomLineY = topPad + 4 * S;
+  const yFor = (step: number) => bottomLineY - ((step - E4_STEP) * S) / 2;
+
+  const clefW = 40;
+  const noteGap = stacked ? 0 : 34;
+  const chordX = clefW + 26;
+  const parts: string[] = [];
+
+  // Note geometry first (to know width and required ledger lines).
+  type Placed = { x: number; y: number; step: number; accidental: string };
+  const placed: Placed[] = [];
+  let x = chordX;
+  let prevStep = -99;
+  let prevOffset = false;
+  for (const n of staffNotes) {
+    let nx = x;
+    if (stacked) {
+      // Adjacent seconds in a stack offset to the right (inversion look).
+      const offset: boolean = n.step - prevStep === 1 && !prevOffset;
+      if (offset) nx += 11;
+      prevOffset = offset;
+      prevStep = n.step;
+    } else {
+      x += noteGap;
+    }
+    placed.push({ x: nx, y: yFor(n.step), step: n.step, accidental: n.accidental });
+  }
+  const lastX = Math.max(...placed.map((p) => p.x));
+  const width = lastX + 34;
+
+  // Staff lines.
+  for (let i = 0; i < 5; i++) {
+    const y = topPad + i * S;
+    parts.push(`<line x1="0" y1="${y}" x2="${width}" y2="${y}" stroke="#000" stroke-width="1.1"/>`);
+  }
+  // Clef: musical glyph with wide font fallback; scaled to wrap the G line.
+  parts.push(
+    `<text x="2" y="${bottomLineY + 1}" font-family="'Bravura Text', 'Apple Symbols', 'Noto Music', 'Segoe UI Symbol', serif" font-size="${4.6 * S}" fill="#000">&#x1D11E;</text>`
+  );
+
+  // Ledger lines (middle C and below; above-staff steps too).
+  const LEDGER_HALF = 12;
+  for (const p of placed) {
+    for (let step = E4_STEP - 2; step >= p.step; step -= 2) {
+      parts.push(
+        `<line x1="${p.x - LEDGER_HALF}" y1="${yFor(step)}" x2="${p.x + LEDGER_HALF}" y2="${yFor(step)}" stroke="#000" stroke-width="1.1"/>`
+      );
+    }
+    const topStep = E4_STEP + 10;
+    for (let step = topStep; step <= p.step; step += 2) {
+      parts.push(
+        `<line x1="${p.x - LEDGER_HALF}" y1="${yFor(step)}" x2="${p.x + LEDGER_HALF}" y2="${yFor(step)}" stroke="#000" stroke-width="1.1"/>`
+      );
+    }
+  }
+
+  // Accidentals, staggered when they'd collide vertically.
+  let accCol = 0;
+  for (const p of placed) {
+    if (!p.accidental) continue;
+    accCol = (accCol + 1) % 2;
+    const ax = p.x - 15 - accCol * 9;
+    parts.push(
+      `<text x="${ax}" y="${p.y + 5}" ${FONT} font-size="17" fill="#000">${p.accidental === "#" ? "♯" : "♭"}</text>`
+    );
+  }
+
+  // Whole-note heads: black ellipse with rotated white hole.
+  for (const p of placed) {
+    parts.push(
+      `<g transform="translate(${p.x} ${p.y})">` +
+        `<ellipse rx="7.6" ry="5.2" fill="#000"/>` +
+        `<ellipse rx="4.2" ry="2.5" transform="rotate(-28)" fill="#fff"/>` +
+        `</g>`
+    );
+  }
+
+  const maxStepUsed = Math.max(...placed.map((p) => p.step), E4_STEP + 8);
+  const minY = Math.min(topPad - S, yFor(maxStepUsed) - S);
+  const height = bottomLineY + 3 * S;
+  return { svg: parts.join(""), width, height, midY: (topPad + bottomLineY) / 2 };
+}
+
+export type MusicFigureOpts = KeyboardDiagramOpts;
+
+/**
+ * Combined textbook figure: treble-staff notation + keyboard diagram.
+ * Third-stacks render as a chord; wider sequences render note-by-note.
+ */
+export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): string | null {
+  const seq = parseNoteSequence(noteText);
+  if (!seq) return null;
+  const staffNotes = toStaffNotes(seq);
+  const diffs = staffNotes.slice(1).map((n, i) => n.step - staffNotes[i].step);
+  const stacked = staffNotes.length <= 6 && diffs.every((d) => d >= 1 && d <= 3);
+  const staff = staffGroup(staffNotes, stacked);
+
+  const keyboard = keyboardDiagramSvg(noteText, {});
+  if (!keyboard) return null;
+  const kbInner = keyboard.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+  const kbW = Number(keyboard.match(/width="(\d+)"/)?.[1] ?? 0);
+  const kbH = Number(keyboard.match(/height="(\d+)"/)?.[1] ?? 0);
+
+  const GAP = 26;
+  const contentH = Math.max(staff.height, kbH);
+  const captionH = opts.caption || opts.figureLabel ? 32 : 6;
+  const width = staff.width + GAP + kbW;
+  const height = contentH + captionH;
+
+  const staffY = Math.max(0, (contentH - staff.height) / 2);
+  const kbY = Math.max(0, (contentH - kbH) / 2);
+
+  const parts: string[] = [];
+  parts.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`
+  );
+  parts.push(`<g transform="translate(0 ${staffY})">${staff.svg}</g>`);
+  parts.push(`<g transform="translate(${staff.width + GAP} ${kbY})">${kbInner}</g>`);
+  if (opts.caption || opts.figureLabel) {
+    const label = opts.figureLabel ? `<tspan font-weight="700">${esc(opts.figureLabel)}</tspan>&#160;&#160;` : "";
+    parts.push(
+      `<text x="2" y="${contentH + 22}" ${FONT} font-size="15" fill="#000">${label}${esc(opts.caption ?? "")}</text>`
+    );
+  }
+  parts.push(`</svg>`);
+  return parts.join("");
+}
+
 const ROMAN_RE = /^(i{1,3}|iv|v|vi{0,2}|I{1,3}|IV|V|VI{0,2})([°oø]|dim)?[0-9]?$/;
 const CHORD_RE = /^[A-G][#♯b♭]?(maj|min|m|dim|aug|sus[24]?|add[0-9]+|[0-9])*[0-9]?(\/[A-G][#♯b♭]?)?$/;
 
