@@ -31,6 +31,17 @@ make self-hosting and embedding viable without hand-holding.
 - [x] docs/parser-overrides.md — boundary rules, the full override contract, parse:check failure classes
 - [x] README "Guides" section linking the three
 
+### v4: music figure generation
+
+The piano-improvisation corpus (102+ chapters) teaches with bold chord
+spellings and progression lines; these become textbook-style figures.
+
+- [x] @bookatlas/core music.ts — keyboard diagrams (ringed keys, textbook B/W idiom) + boxed progression diagrams with arrows; pure string → SVG
+- [x] tools/illustrate.ts (`pnpm illustrate <bookdir>`) — fence-aware detection of `**Chord = notes**`, chord-heading note runs, and standalone progressions; writes images/<mdbase>-<serial>.svg with "Figure ch.n" captions; injects markdown refs; idempotent re-runs (strip + regenerate + orphan cleanup) with per-chapter dedup
+- [ ] staff-notation renderer (needs a proper treble clef glyph/path) pairing staff + keyboard like the source-textbook figures
+- [ ] render-time fenced music blocks (```music) so authors get figures without running the CLI
+- [ ] docs/illustrations.md — authoring guide for the detection patterns
+
 ### Later
 
 - [ ] vitest suite for parseChapter (port parse-check assertions)

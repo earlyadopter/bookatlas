@@ -18,3 +18,12 @@ export {
   parseFilter,
   type FlatSub
 } from "./nav";
+export {
+  keyboardDiagramSvg,
+  progressionDiagramSvg,
+  parseNote,
+  parseNoteSequence,
+  parseProgression,
+  type KeyboardDiagramOpts,
+  type ProgressionDiagramOpts
+} from "./music";
