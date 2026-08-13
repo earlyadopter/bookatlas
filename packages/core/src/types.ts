@@ -11,6 +11,16 @@ export type ParserOverrides = {
   fileOrder?: string[];
 };
 
+/** Config-driven grouping of chapters into parts (and optional parent groups). */
+export type BookPart = {
+  label: string;
+  /** Parent grouping above parts, e.g. "Theory" / "Practice". */
+  group?: string;
+  /** Inclusive chapter-number range. */
+  from: number;
+  to: number;
+};
+
 export type BookConfig = {
   id: string;
   title: string;
@@ -20,6 +30,9 @@ export type BookConfig = {
   description?: string;
   accent?: string;
   parser?: ParserOverrides;
+  /** Content-type filter chips + badges. Default true; disable for corpora where the tag heuristics don't apply. */
+  filters?: boolean;
+  parts?: BookPart[];
 };
 
 export interface SubChapter {
@@ -57,8 +70,10 @@ export interface Chapter {
   introHtml: string | null;
   /** Rendered HTML of content BEFORE the chapter heading (a book-wide TOC/front matter). */
   preambleHtml: string | null;
-  /** "Part III — Foundations" divider label (single-file books). */
+  /** "Part III — Foundations" divider label (single-file books or config parts). */
   part?: string | null;
+  /** Parent group above parts (config-assigned), e.g. "Theory". */
+  partGroup?: string | null;
   subchapters: SubChapter[];
 }
 
@@ -70,6 +85,8 @@ export interface Book {
   mode: "files" | "single-file";
   coverUrl?: string;
   accent?: string;
+  /** Content-type filter UI enabled (default true). */
+  filters?: boolean;
   chapters: Chapter[];
   tagCounts: Record<Tag, number>;
 }

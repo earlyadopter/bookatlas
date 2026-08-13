@@ -21,6 +21,7 @@ export default async function ChapterPage({
   const chapter = book.chapters.find((c) => c.slug === chapterSlug);
   if (!chapter) notFound();
   const filter = parseFilter(f);
+  const showFilters = book.filters !== false;
 
   const stripItems = book.chapters.map((c) => ({
     href: chapterHref(book.id, c.slug, filter ?? undefined),
@@ -41,11 +42,13 @@ export default async function ChapterPage({
       </header>
       <ChapterStrip items={stripItems} />
       <h1 className="page-title">{chapter.fullTitle}</h1>
-      <FilterChips
-        basePath={`/b/${book.id}/${chapter.slug}`}
-        active={filter}
-        counts={book.tagCounts}
-      />
+      {showFilters ? (
+        <FilterChips
+          basePath={`/b/${book.id}/${chapter.slug}`}
+          active={filter}
+          counts={book.tagCounts}
+        />
+      ) : null}
       {chapter.preambleHtml ? (
         <details className="preamble">
           <summary>About this book</summary>
@@ -67,14 +70,16 @@ export default async function ChapterPage({
             >
               <span className="sub-tile-head">
                 <span className="sub-tile-num">{sub.displayNumber || "•"}</span>
-                <span className="sub-tile-badges">
-                  {sub.tags.includes("interview") ? <span className="badge interview">Q&A</span> : null}
-                  {sub.tags.includes("cheatsheet") ? <span className="badge cheatsheet">cheat sheet</span> : null}
-                  {sub.tags.includes("code") ? <span className="badge code">code</span> : null}
-                  {!sub.tags.includes("interview") && sub.hasInterviewBlocks ? (
-                    <span className="badge dot" title="Interview Q&A inside">●</span>
-                  ) : null}
-                </span>
+                {showFilters ? (
+                  <span className="sub-tile-badges">
+                    {sub.tags.includes("interview") ? <span className="badge interview">Q&A</span> : null}
+                    {sub.tags.includes("cheatsheet") ? <span className="badge cheatsheet">cheat sheet</span> : null}
+                    {sub.tags.includes("code") ? <span className="badge code">code</span> : null}
+                    {!sub.tags.includes("interview") && sub.hasInterviewBlocks ? (
+                      <span className="badge dot" title="Interview Q&A inside">●</span>
+                    ) : null}
+                  </span>
+                ) : null}
               </span>
               <span className="sub-tile-title">{sub.title}</span>
               {sub.excerpt ? <span className="sub-tile-excerpt">{sub.excerpt}</span> : null}

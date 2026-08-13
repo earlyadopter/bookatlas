@@ -320,6 +320,29 @@ a {
   color: var(--muted);
 }
 
+/* ── Book overview: part/group sections ───────────────────────────────── */
+
+.book-section { margin-top: 6px; }
+
+.group-title {
+  font-family: var(--font-display-stack);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 34px 0 2px;
+  padding-top: 18px;
+  border-top: 2px solid var(--line);
+}
+
+.part-title {
+  font-family: var(--font-mono-stack);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  margin: 20px 0 10px;
+}
+
 /* ── Book overview: chapter tiles ─────────────────────────────────────── */
 
 .chapter-grid {

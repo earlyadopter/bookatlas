@@ -108,6 +108,18 @@ export const getBook = cache(async (bookId: string): Promise<Book | null> => {
     }
   }
 
+  // Config-driven part grouping (chapter-number ranges). Single-file PART
+  // dividers stay unless the config explicitly maps the chapter.
+  if (config.parts?.length) {
+    for (const ch of chapters) {
+      const part = config.parts.find((p) => ch.number >= p.from && ch.number <= p.to);
+      if (part) {
+        ch.part = part.label;
+        ch.partGroup = part.group ?? null;
+      }
+    }
+  }
+
   const coverUrl = existsSync(path.join(config.path, "cover.png"))
     ? `${assetBase}cover.png`
     : undefined;
@@ -120,6 +132,7 @@ export const getBook = cache(async (bookId: string): Promise<Book | null> => {
     mode: config.mode ?? "files",
     coverUrl,
     accent: config.accent,
+    filters: config.filters ?? true,
     chapters,
     tagCounts
   };
