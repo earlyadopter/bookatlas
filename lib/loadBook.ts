@@ -112,7 +112,12 @@ export const getBook = cache(async (bookId: string): Promise<Book | null> => {
   // dividers stay unless the config explicitly maps the chapter.
   if (config.parts?.length) {
     for (const ch of chapters) {
-      const part = config.parts.find((p) => ch.number >= p.from && ch.number <= p.to);
+      const part = config.parts.find(
+        (p) =>
+          (!p.prefix || ch.slug.startsWith(p.prefix)) &&
+          (p.from === undefined || ch.number >= p.from) &&
+          (p.to === undefined || ch.number <= p.to)
+      );
       if (part) {
         ch.part = part.label;
         ch.partGroup = part.group ?? null;

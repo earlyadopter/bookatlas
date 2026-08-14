@@ -68,7 +68,9 @@ async function main() {
       }
 
       for (const sub of ch.subchapters) {
-        const lines = sub.mdBody.split("\n");
+        // Injected figure refs aren't prose — don't let them tip the
+        // missed-split heuristic.
+        const lines = sub.mdBody.split("\n").filter((l) => !/^!\[[^\]]*\]\([^)]*\)\s*$/.test(l.trim()));
         if (lines.length > 200) {
           fail(`${ch.slug}/${sub.slug}: body is ${lines.length} lines — missed split?`);
         }

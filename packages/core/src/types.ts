@@ -16,9 +16,11 @@ export type BookPart = {
   label: string;
   /** Parent grouping above parts, e.g. "Theory" / "Practice". */
   group?: string;
-  /** Inclusive chapter-number range. */
-  from: number;
-  to: number;
+  /** Chapter-slug (filename) prefix, e.g. "workshop-". */
+  prefix?: string;
+  /** Inclusive chapter-number range (within the prefix, when both given). */
+  from?: number;
+  to?: number;
 };
 
 export type BookConfig = {
