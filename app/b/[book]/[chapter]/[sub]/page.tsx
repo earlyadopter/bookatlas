@@ -8,6 +8,7 @@ import { ChapterStrip, KeyNav, TransitionLink } from "@bookatlas/core/components
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StructureNav } from "@/components/StructureNav";
+import { LastVisited } from "@/components/LastVisited";
 import { buildStructure } from "@/lib/structure";
 
 
@@ -114,11 +115,19 @@ export default async function SubChapterPage({
               <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
             </>
           )}
-          {structure ? <StructureNav {...structure} /> : null}
+          {structure ? (
+            <StructureNav {...structure} bookId={book.id} currentHref={subHref(book.id, chapter.slug, sub.slug)} />
+          ) : null}
           <ThemeToggle />
         </header>
         <ChapterStrip items={stripItems} />
       </div>
+      <LastVisited
+        bookId={book.id}
+        group={chapter.partGroup ?? ""}
+        href={subHref(book.id, chapter.slug, sub.slug)}
+        label={`${sub.displayNumber ? sub.displayNumber + " " : ""}${sub.title}`}
+      />
       <div className="zoom">
         {/* column-reverse: nearest-first DOM order renders bottom-up, so the
             rail starts scrolled to the neighbor adjacent to the article. */}

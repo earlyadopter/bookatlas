@@ -7,6 +7,7 @@ import { ChapterStrip, FilterChips, TransitionLink } from "@bookatlas/core/compo
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StructureNav } from "@/components/StructureNav";
+import { LastVisited } from "@/components/LastVisited";
 import { buildStructure } from "@/lib/structure";
 
 
@@ -58,11 +59,19 @@ export default async function ChapterPage({
               <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
             </>
           )}
-          {structure ? <StructureNav {...structure} /> : null}
+          {structure ? (
+            <StructureNav {...structure} bookId={book.id} currentHref={chapterHref(book.id, chapter.slug)} />
+          ) : null}
           <ThemeToggle />
         </header>
         <ChapterStrip items={stripItems} />
       </div>
+      <LastVisited
+        bookId={book.id}
+        group={chapter.partGroup ?? ""}
+        href={chapterHref(book.id, chapter.slug)}
+        label={chapter.fullTitle}
+      />
       <h1 className="page-title">{chapter.fullTitle}</h1>
       {showFilters ? (
         <FilterChips

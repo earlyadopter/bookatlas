@@ -1052,3 +1052,11 @@ a {
 
 /* Anchor targets land below the sticky header. */
 .part-title, .group-title { scroll-margin-top: 86px; }
+
+.structure-row.return {
+  margin-top: 4px;
+  border-top: 1px dashed var(--line);
+  border-radius: 0 0 8px 8px;
+  color: var(--g, var(--accent));
+  font-weight: 500;
+}

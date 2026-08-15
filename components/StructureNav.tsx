@@ -3,13 +3,28 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { StructureData } from "@/lib/structure";
+import { readLastPositions } from "@/components/LastVisited";
 
 // The "where am I" dropdown on deep pages: the current group's map page,
 // its parts/semesters with the current one highlighted, and a jump to the
 // other half of the course.
-export function StructureNav(props: StructureData) {
+export function StructureNav(props: StructureData & { bookId: string; currentHref: string }) {
   const [open, setOpen] = useState(false);
+  const [returns, setReturns] = useState<{ href: string; label: string }[]>([]);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const toggle = () => {
+    if (!open) {
+      // Read at open time — no SSR/hydration involvement.
+      const positions = readLastPositions(props.bookId);
+      const rows = Object.entries(positions)
+        .filter(([group, pos]) => group !== (props.groupLabel ?? "") && pos.href !== props.currentHref)
+        .sort((a, b) => b[1].ts - a[1].ts)
+        .map(([, pos]) => ({ href: pos.href, label: pos.label }));
+      setReturns(rows);
+    }
+    setOpen((v) => !v);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -35,7 +50,7 @@ export function StructureNav(props: StructureData) {
         aria-expanded={open}
         aria-label="Course map"
         title="Course map"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
       >
         ☰
       </button>
@@ -66,6 +81,11 @@ export function StructureNav(props: StructureData) {
               {props.other.label} →
             </Link>
           ) : null}
+          {returns.map((r) => (
+            <Link key={r.href} href={r.href} className="structure-row return" onClick={() => setOpen(false)}>
+              ⤺ Return to {r.label}
+            </Link>
+          ))}
         </div>
       ) : null}
     </div>
