@@ -7,11 +7,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 
 
-// Params render on demand and land in the full-route cache (static mode);
-// nothing is enumerated at build so deploys stay fast.
-export async function generateStaticParams() {
-  return [];
-}
+export { generateStaticParams } from "@/lib/staticParams";
 
 export default async function ChapterPage({
   params,
