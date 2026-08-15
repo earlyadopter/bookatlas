@@ -89,7 +89,12 @@ export const getBook = cache(async (bookId: string): Promise<Book | null> => {
     derivedTitle = loaded.title;
   } else {
     const entries = await fs.readdir(config.path);
-    let files = entries.filter((f) => f.endsWith(".md") && !f.startsWith("."));
+    let files = entries.filter(
+      (f) =>
+        f.endsWith(".md") &&
+        !f.startsWith(".") &&
+        !(config.ignore ?? []).some((prefix) => f.startsWith(prefix))
+    );
     if (config.parser?.fileOrder) {
       const order = config.parser.fileOrder;
       files = order.filter((f) => files.includes(f));

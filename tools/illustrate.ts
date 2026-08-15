@@ -120,9 +120,11 @@ async function main() {
     process.exit(1);
   }
   const imagesDir = path.join(bookDir, "images");
+  // Chapters carry numbers (module-01, workshop-003, …); digitless .md files
+  // are notes/front-matter and are left untouched.
   const mdFiles = fs
     .readdirSync(bookDir)
-    .filter((f) => f.endsWith(".md") && !f.startsWith("."))
+    .filter((f) => f.endsWith(".md") && !f.startsWith(".") && /\d/.test(f))
     .sort((a, b) => a.localeCompare(b));
 
   let totalFigures = 0;

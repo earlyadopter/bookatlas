@@ -34,6 +34,8 @@ export type BookConfig = {
   parser?: ParserOverrides;
   /** Content-type filter chips + badges. Default true; disable for corpora where the tag heuristics don't apply. */
   filters?: boolean;
+  /** Filename prefixes to exclude from the book (notes, drafts living in the same folder). */
+  ignore?: string[];
   parts?: BookPart[];
 };
 
