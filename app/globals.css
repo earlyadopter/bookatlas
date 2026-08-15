@@ -334,9 +334,11 @@ a {
   font-family: var(--font-display-stack);
   font-size: 1.6rem;
   font-weight: 600;
-  margin: 34px 0 2px;
-  padding-top: 18px;
-  border-top: 2px solid var(--line);
+  margin: 40px 0 6px;
+  background: color-mix(in srgb, var(--g, var(--accent)) 15%, var(--bg));
+  border-left: 4px solid var(--g, var(--accent));
+  border-radius: 10px;
+  padding: 10px 18px;
 }
 
 .part-title {
