@@ -18,8 +18,11 @@ export default async function ChapterPage({
   const { f } = await searchParams;
   const book = await getBook(bookId);
   if (!book) notFound();
-  const chapter = book.chapters.find((c) => c.slug === chapterSlug);
-  if (!chapter) notFound();
+  const chapterIdx = book.chapters.findIndex((c) => c.slug === chapterSlug);
+  if (chapterIdx === -1) notFound();
+  const chapter = book.chapters[chapterIdx];
+  const prevChapter = chapterIdx > 0 ? book.chapters[chapterIdx - 1] : null;
+  const nextChapter = chapterIdx < book.chapters.length - 1 ? book.chapters[chapterIdx + 1] : null;
   const filter = parseFilter(f);
   const showFilters = book.filters !== false;
 
@@ -87,6 +90,30 @@ export default async function ChapterPage({
             </TransitionLink>
           );
         })}
+      </div>
+      <div className="pager">
+        {prevChapter ? (
+          <TransitionLink
+            href={chapterHref(book.id, prevChapter.slug, filter ?? undefined)}
+            className="pager-card"
+          >
+            <span className="eyebrow">← Previous</span>
+            <span>{prevChapter.fullTitle}</span>
+          </TransitionLink>
+        ) : (
+          <span />
+        )}
+        {nextChapter ? (
+          <TransitionLink
+            href={chapterHref(book.id, nextChapter.slug, filter ?? undefined)}
+            className="pager-card next"
+          >
+            <span className="eyebrow">Next →</span>
+            <span>{nextChapter.fullTitle}</span>
+          </TransitionLink>
+        ) : (
+          <span />
+        )}
       </div>
     </main>
   );

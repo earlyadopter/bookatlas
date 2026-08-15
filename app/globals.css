@@ -326,6 +326,26 @@ a {
   height: auto;
 }
 
+/* Scroll-position hairline under the chapter strip: shows which slice of
+   the strip is in view — a scrollbar's information, none of its chrome. */
+.strip-progress {
+  position: relative;
+  height: 3px;
+  margin: 0 4px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 55%, var(--bg));
+  overflow: hidden;
+}
+
+.strip-progress-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--g, var(--accent)) 55%, var(--line));
+  transition: left 90ms linear, width 90ms linear;
+}
+
 /* ── Book overview: part/group sections ───────────────────────────────── */
 
 .book-section { margin-top: 6px; }
@@ -392,7 +412,7 @@ a {
   overflow-x: auto;
   scrollbar-width: none;
   padding: 4px 24px;
-  margin: 0 -20px 6px;
+  margin: 0 -20px 2px;
   mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
   -webkit-mask-image: linear-gradient(
     90deg,
