@@ -7,3 +7,4 @@ out/
 books.config.local.json
 planning/
 .obsidian/
+.vercel

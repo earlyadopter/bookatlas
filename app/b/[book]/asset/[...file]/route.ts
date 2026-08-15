@@ -32,17 +32,21 @@ export async function GET(
   if (!type) return new Response("Not found", { status: 404 });
 
   try {
-    // Revalidate instead of timed caching: books are edited live (and figure
-    // files regenerate under the same names), so a fixed max-age shows stale
-    // images after a refresh. ETag keeps repeat loads as cheap 304s.
+    // Locally, books are edited live (figures regenerate under the same
+    // names), so browsers must revalidate every load — ETag keeps that a
+    // cheap 304. Deployed, content only changes with a deploy: long CDN +
+    // browser caching so assets stop consuming per-request platform quota.
     const stat = await fs.stat(abs);
     const etag = `"${stat.mtimeMs}-${stat.size}"`;
     if (request.headers.get("if-none-match") === etag) {
       return new Response(null, { status: 304, headers: { ETag: etag } });
     }
+    const cacheControl = process.env.VERCEL
+      ? "public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800"
+      : "no-cache";
     const buf = await fs.readFile(abs);
     return new Response(new Uint8Array(buf), {
-      headers: { "Content-Type": type, "Cache-Control": "no-cache", ETag: etag }
+      headers: { "Content-Type": type, "Cache-Control": cacheControl, ETag: etag }
     });
   } catch {
     return new Response("Not found", { status: 404 });
