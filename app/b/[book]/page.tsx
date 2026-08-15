@@ -6,10 +6,16 @@ import { chapterHref, matchesFilter, parseFilter } from "@bookatlas/core";
 import { FilterChips } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export const dynamic = "force-dynamic";
+
 
 // Consecutive chapters sharing a part/group render as one titled grid.
 type Section = { group: string | null; part: string | null; chapters: Chapter[] };
+
+// Params render on demand and land in the full-route cache (static mode);
+// nothing is enumerated at build so deploys stay fast.
+export async function generateStaticParams() {
+  return [];
+}
 
 export default async function BookPage({
   params,
@@ -19,7 +25,9 @@ export default async function BookPage({
   searchParams: Promise<{ f?: string }>;
 }) {
   const { book: bookId } = await params;
-  const { f } = await searchParams;
+  // Static mode skips searchParams (filters read as off) so the page can
+  // prerender; otherwise awaiting it keeps rendering per-request.
+  const { f } = process.env.STATIC_BOOKS === "1" ? ({} as { f?: string }) : await searchParams;
   const book = await getBook(bookId);
   if (!book) notFound();
   const filter = parseFilter(f);

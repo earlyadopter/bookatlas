@@ -5,7 +5,13 @@ import { chapterHref, subHref, matchesFilter, parseFilter } from "@bookatlas/cor
 import { ChapterStrip, FilterChips, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export const dynamic = "force-dynamic";
+
+
+// Params render on demand and land in the full-route cache (static mode);
+// nothing is enumerated at build so deploys stay fast.
+export async function generateStaticParams() {
+  return [];
+}
 
 export default async function ChapterPage({
   params,
@@ -15,7 +21,9 @@ export default async function ChapterPage({
   searchParams: Promise<{ f?: string }>;
 }) {
   const { book: bookId, chapter: chapterSlug } = await params;
-  const { f } = await searchParams;
+  // Static mode skips searchParams (filters read as off) so the page can
+  // prerender; otherwise awaiting it keeps rendering per-request.
+  const { f } = process.env.STATIC_BOOKS === "1" ? ({} as { f?: string }) : await searchParams;
   const book = await getBook(bookId);
   if (!book) notFound();
   const chapterIdx = book.chapters.findIndex((c) => c.slug === chapterSlug);

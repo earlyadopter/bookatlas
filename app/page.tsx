@@ -1,16 +1,21 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { listBooks } from "@/lib/loadBook";
 import { bookHref } from "@bookatlas/core";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export const dynamic = "force-dynamic";
+
 
 const GITHUB_URL = "https://github.com/earlyadopter/bookatlas";
 
 // Books that are format demos, not the product's subject — badged on the card.
 const DEMO_BOOK_IDS = new Set(["mulesoft-bootcamp"]);
 
+// Content-in-repo deployments set STATIC_BOOKS=1: pages render once per
+// deploy and serve from the full-route cache. Otherwise connection() keeps
+// rendering per-request so live-edited books refresh immediately.
 export default async function LibraryPage() {
+  if (process.env.STATIC_BOOKS !== "1") await connection();
   const books = await listBooks();
 
   return (

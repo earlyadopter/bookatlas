@@ -6,7 +6,7 @@ import { chapterHref, subHref, getPrevNext, matchesFilter, parseFilter } from "@
 import { ChapterStrip, KeyNav, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export const dynamic = "force-dynamic";
+
 
 // Takes only the outline fields, never a full SubChapter — keeps section
 // content (html) out of this subtree so nothing can serialize it client-side.
@@ -39,6 +39,12 @@ function MiniTile({
   );
 }
 
+// Params render on demand and land in the full-route cache (static mode);
+// nothing is enumerated at build so deploys stay fast.
+export async function generateStaticParams() {
+  return [];
+}
+
 export default async function SubChapterPage({
   params,
   searchParams
@@ -47,7 +53,9 @@ export default async function SubChapterPage({
   searchParams: Promise<{ f?: string }>;
 }) {
   const { book: bookId, chapter: chapterSlug, sub: subSlug } = await params;
-  const { f } = await searchParams;
+  // Static mode skips searchParams (filters read as off) so the page can
+  // prerender; otherwise awaiting it keeps rendering per-request.
+  const { f } = process.env.STATIC_BOOKS === "1" ? ({} as { f?: string }) : await searchParams;
   const book = await getBook(bookId);
   if (!book) notFound();
   const chapterIdx = book.chapters.findIndex((c) => c.slug === chapterSlug);
