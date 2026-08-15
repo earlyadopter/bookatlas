@@ -6,6 +6,7 @@ import { matchesFilter, parseFilter } from "@bookatlas/core";
 import { chapterHref } from "@/lib/hrefs";
 import { FilterChips } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteFooter } from "@/components/SiteFooter";
 
 
 
@@ -49,7 +50,9 @@ export default async function BookPage({
       style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
     >
       <header className="topbar">
-        <Link href="/" className="brand">Bookatlas</Link>
+        <Link href="/" className="brand">
+          {process.env.SINGLE_BOOK ? book.title : "Bookatlas"}
+        </Link>
         <ThemeToggle />
       </header>
       <h1 className="page-title">{book.title}</h1>
@@ -88,6 +91,7 @@ export default async function BookPage({
           </section>
         );
       })}
+      <SiteFooter />
     </main>
   );
 }

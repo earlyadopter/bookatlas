@@ -5,6 +5,7 @@ import { matchesFilter, parseFilter } from "@bookatlas/core";
 import { bookHref, chapterHref, subHref } from "@/lib/hrefs";
 import { ChapterStrip, FilterChips, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteFooter } from "@/components/SiteFooter";
 
 
 
@@ -44,8 +45,14 @@ export default async function ChapterPage({
       style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
     >
       <header className="topbar">
-        <Link href="/" className="brand">Bookatlas</Link>
-        <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
+        {process.env.SINGLE_BOOK ? (
+          <Link href="/" className="brand">{book.title}</Link>
+        ) : (
+          <>
+            <Link href="/" className="brand">Bookatlas</Link>
+            <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
+          </>
+        )}
         <ThemeToggle />
       </header>
       <ChapterStrip items={stripItems} />
@@ -120,6 +127,7 @@ export default async function ChapterPage({
           <span />
         )}
       </div>
+      <SiteFooter />
     </main>
   );
 }

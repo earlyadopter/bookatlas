@@ -6,6 +6,7 @@ import { getPrevNext, matchesFilter, parseFilter } from "@bookatlas/core";
 import { bookHref, chapterHref, subHref } from "@/lib/hrefs";
 import { ChapterStrip, KeyNav, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteFooter } from "@/components/SiteFooter";
 
 
 
@@ -100,8 +101,14 @@ export default async function SubChapterPage({
         nextChapterHref={nextChapter ? chapterHref(book.id, nextChapter.slug, fParam) : null}
       />
       <header className="topbar">
-        <Link href="/" className="brand">Bookatlas</Link>
-        <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
+        {process.env.SINGLE_BOOK ? (
+          <Link href="/" className="brand">{book.title}</Link>
+        ) : (
+          <>
+            <Link href="/" className="brand">Bookatlas</Link>
+            <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
+          </>
+        )}
         <ThemeToggle />
       </header>
       <ChapterStrip items={stripItems} />
@@ -173,6 +180,7 @@ export default async function SubChapterPage({
           ))}
         </aside>
       </div>
+      <SiteFooter />
     </main>
   );
 }

@@ -959,3 +959,14 @@ a {
     transition: none !important;
   }
 }
+
+/* Single-book cross-reference footer */
+.site-footer {
+  margin: 44px 0 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+.site-footer a { color: var(--muted); text-decoration-color: var(--line); }
