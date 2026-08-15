@@ -8,6 +8,7 @@ import { ChapterStrip, KeyNav, TransitionLink } from "@bookatlas/core/components
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StructureNav } from "@/components/StructureNav";
+import { StickyTitle } from "@/components/StickyTitle";
 import { LastVisited } from "@/components/LastVisited";
 import { buildStructure } from "@/lib/structure";
 
@@ -121,6 +122,9 @@ export default async function SubChapterPage({
           <ThemeToggle />
         </header>
         <ChapterStrip items={stripItems} />
+        <StickyTitle
+          title={`${sub.displayNumber ? sub.displayNumber + " " : ""}${sub.title}`}
+        />
       </div>
       <LastVisited
         bookId={book.id}
@@ -157,7 +161,7 @@ export default async function SubChapterPage({
               {nextHref ? <TransitionLink href={nextHref} className="chip">next →</TransitionLink> : null}
             </span>
           </div>
-          <h1 className="stage-title">
+          <h1 className="stage-title" id="page-heading">
             {sub.displayNumber ? <span className="stage-num">{sub.displayNumber}</span> : null}
             {sub.title}
           </h1>

@@ -1060,3 +1060,28 @@ a {
   color: var(--g, var(--accent));
   font-weight: 500;
 }
+
+/* Compact title in the sticky header: appears when the real heading
+   scrolls away. Desktop/tablet only, where the header is sticky. */
+.sticky-title { display: none; }
+
+@media (min-width: 768px) {
+  .sticky-title {
+    display: block;
+    font-family: var(--font-display-stack);
+    font-size: 0.98rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 0;
+    opacity: 0;
+    padding: 0 4px;
+    transition: max-height 0.18s ease, opacity 0.18s ease, padding 0.18s ease;
+  }
+  .sticky-title[data-visible="true"] {
+    max-height: 2em;
+    opacity: 1;
+    padding: 2px 4px 8px;
+  }
+}
