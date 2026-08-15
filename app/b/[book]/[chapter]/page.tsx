@@ -44,18 +44,20 @@ export default async function ChapterPage({
       className="page wide"
       style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
     >
-      <header className="topbar">
-        {process.env.SINGLE_BOOK ? (
-          <Link href="/" className="brand">{book.title}</Link>
-        ) : (
-          <>
-            <Link href="/" className="brand">Bookatlas</Link>
-            <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
-          </>
-        )}
-        <ThemeToggle />
-      </header>
-      <ChapterStrip items={stripItems} />
+      <div className="page-sticky">
+        <header className="topbar">
+          {process.env.SINGLE_BOOK ? (
+            <Link href="/" className="brand">{book.title}</Link>
+          ) : (
+            <>
+              <Link href="/" className="brand">Bookatlas</Link>
+              <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
+            </>
+          )}
+          <ThemeToggle />
+        </header>
+        <ChapterStrip items={stripItems} />
+      </div>
       <h1 className="page-title">{chapter.fullTitle}</h1>
       {showFilters ? (
         <FilterChips

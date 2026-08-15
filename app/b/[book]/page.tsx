@@ -49,12 +49,14 @@ export default async function BookPage({
       className="page"
       style={book.accent ? ({ "--g": book.accent } as React.CSSProperties) : undefined}
     >
-      <header className="topbar">
-        <Link href="/" className="brand">
-          {process.env.SINGLE_BOOK ? book.title : "Bookatlas"}
-        </Link>
-        <ThemeToggle />
-      </header>
+      <div className="page-sticky">
+        <header className="topbar">
+          <Link href="/" className="brand">
+            {process.env.SINGLE_BOOK ? book.title : "Bookatlas"}
+          </Link>
+          <ThemeToggle />
+        </header>
+      </div>
       <h1 className="page-title">{book.title}</h1>
       {showFilters ? (
         <FilterChips basePath={`/b/${book.id}`} active={filter} counts={book.tagCounts} />

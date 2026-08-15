@@ -970,3 +970,15 @@ a {
   text-align: center;
 }
 .site-footer a { color: var(--muted); text-decoration-color: var(--line); }
+
+/* Orientation header (topbar + chapter strip) stays pinned while long
+   pages scroll — larger screens only; phones keep every pixel. */
+@media (min-width: 768px) {
+  .page-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--bg);
+    box-shadow: 0 10px 14px -14px rgba(0, 0, 0, 0.28);
+  }
+}

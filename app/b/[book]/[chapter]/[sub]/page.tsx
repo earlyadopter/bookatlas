@@ -100,18 +100,20 @@ export default async function SubChapterPage({
         prevChapterHref={prevChapter ? chapterHref(book.id, prevChapter.slug, fParam) : null}
         nextChapterHref={nextChapter ? chapterHref(book.id, nextChapter.slug, fParam) : null}
       />
-      <header className="topbar">
-        {process.env.SINGLE_BOOK ? (
-          <Link href="/" className="brand">{book.title}</Link>
-        ) : (
-          <>
-            <Link href="/" className="brand">Bookatlas</Link>
-            <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
-          </>
-        )}
-        <ThemeToggle />
-      </header>
-      <ChapterStrip items={stripItems} />
+      <div className="page-sticky">
+        <header className="topbar">
+          {process.env.SINGLE_BOOK ? (
+            <Link href="/" className="brand">{book.title}</Link>
+          ) : (
+            <>
+              <Link href="/" className="brand">Bookatlas</Link>
+              <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
+            </>
+          )}
+          <ThemeToggle />
+        </header>
+        <ChapterStrip items={stripItems} />
+      </div>
       <div className="zoom">
         {/* column-reverse: nearest-first DOM order renders bottom-up, so the
             rail starts scrolled to the neighbor adjacent to the article. */}
