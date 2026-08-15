@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Chapter } from "@bookatlas/core";
 import { getBook } from "@/lib/loadBook";
-import { chapterHref, matchesFilter, parseFilter } from "@bookatlas/core";
+import { matchesFilter, parseFilter } from "@bookatlas/core";
+import { chapterHref } from "@/lib/hrefs";
 import { FilterChips } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { listBooks } from "@/lib/loadBook";
-import { bookHref } from "@bookatlas/core";
+import { bookHref } from "@/lib/hrefs";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 
@@ -15,6 +15,14 @@ const DEMO_BOOK_IDS = new Set(["mulesoft-bootcamp"]);
 // deploy and serve from the full-route cache. Otherwise connection() keeps
 // rendering per-request so live-edited books refresh immediately.
 export default async function LibraryPage() {
+  // Single-book deployments serve the book itself at the root.
+  if (process.env.SINGLE_BOOK) {
+    const { default: BookPage } = await import("./b/[book]/page");
+    return BookPage({
+      params: Promise.resolve({ book: process.env.SINGLE_BOOK }),
+      searchParams: Promise.resolve({})
+    });
+  }
   if (process.env.STATIC_BOOKS !== "1") await connection();
   const books = await listBooks();
 

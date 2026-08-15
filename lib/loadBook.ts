@@ -79,7 +79,8 @@ export const getBook = cache(async (bookId: string): Promise<Book | null> => {
   const config = findBookConfig(bookId);
   if (!config) return null;
 
-  const assetBase = `/b/${config.id}/asset/`;
+  const assetBase =
+    process.env.SINGLE_BOOK === config.id ? "/asset/" : `/b/${config.id}/asset/`;
   let chapters: Chapter[];
   let derivedTitle: string | null = null;
 

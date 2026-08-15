@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBook } from "@/lib/loadBook";
-import { chapterHref, subHref, matchesFilter, parseFilter } from "@bookatlas/core";
+import { matchesFilter, parseFilter } from "@bookatlas/core";
+import { bookHref, chapterHref, subHref } from "@/lib/hrefs";
 import { ChapterStrip, FilterChips, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -44,7 +45,7 @@ export default async function ChapterPage({
     >
       <header className="topbar">
         <Link href="/" className="brand">Bookatlas</Link>
-        <Link href={`/b/${book.id}`} className="topbar-book">{book.title}</Link>
+        <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
         <ThemeToggle />
       </header>
       <ChapterStrip items={stripItems} />
