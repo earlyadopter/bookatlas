@@ -1,26 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+// Self-hosted fonts (Fontsource): bundled at build, no fonts.google.com
+// dependency — transient CDN failures were breaking production deploys.
+import "@fontsource/newsreader/500.css";
+import "@fontsource/newsreader/600.css";
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/ibm-plex-sans/500.css";
+import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource/ibm-plex-sans/cyrillic-400.css";
+import "@fontsource/ibm-plex-sans/cyrillic-500.css";
+import "@fontsource/ibm-plex-sans/cyrillic-600.css";
+import "@fontsource/ibm-plex-mono/400.css";
 import { RouteListener } from "@bookatlas/core/components";
-
-const displayFont = Newsreader({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  style: ["normal"],
-  variable: "--font-display"
-});
-
-const sansFont = IBM_Plex_Sans({
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
-  variable: "--font-sans"
-});
-
-const monoFont = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-mono"
-});
 
 export const metadata: Metadata = {
   title: { default: "Bookatlas", template: "%s — Bookatlas" },
@@ -36,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       suppressHydrationWarning
       data-theme="light"
-      className={`${displayFont.variable} ${sansFont.variable} ${monoFont.variable}`}
     >
       <body>
         {/* Runs before anything below it paints — prevents a theme flash.

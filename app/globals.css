@@ -12,9 +12,9 @@
   /* Per-book hue, overridden inline via style={{--g}}. */
   --g: var(--accent);
 
-  --font-display-stack: var(--font-display), Georgia, "Times New Roman", serif;
-  --font-sans-stack: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display-stack: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans-stack: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono-stack: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   /* ASCII diagrams need one font covering box-drawing glyphs; mixing fonts
      inside a block breaks column alignment. */
   --font-diagram-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono",
