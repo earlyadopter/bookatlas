@@ -4,6 +4,7 @@ import type { Chapter } from "@bookatlas/core";
 import { getBook } from "@/lib/loadBook";
 import { matchesFilter, parseFilter } from "@bookatlas/core";
 import { chapterHref } from "@/lib/hrefs";
+import { partAnchor } from "@/lib/structure";
 import { FilterChips } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -67,7 +68,11 @@ export default async function BookPage({
         return (
           <section key={si} className="book-section">
             {groupHeading ? <h2 className="group-title">{groupHeading}</h2> : null}
-            {section.part ? <h3 className="part-title">{section.part}</h3> : null}
+            {section.part ? (
+              <h3 className="part-title" id={partAnchor(section.part)}>
+                {section.part}
+              </h3>
+            ) : null}
             <div className="chapter-grid">
               {section.chapters.map((ch) => {
                 const matching = filter

@@ -7,6 +7,8 @@ import { bookHref, chapterHref, subHref } from "@/lib/hrefs";
 import { ChapterStrip, KeyNav, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteFooter } from "@/components/SiteFooter";
+import { StructureNav } from "@/components/StructureNav";
+import { buildStructure } from "@/lib/structure";
 
 
 
@@ -81,6 +83,8 @@ export default async function SubChapterPage({
   const prevChapter = chapterIdx > 0 ? book.chapters[chapterIdx - 1] : null;
   const nextChapter = chapterIdx < book.chapters.length - 1 ? book.chapters[chapterIdx + 1] : null;
 
+  const structure = buildStructure(book, chapter);
+
   const stripItems = book.chapters.map((c) => ({
     href: chapterHref(book.id, c.slug, fParam),
     num: String(c.number).padStart(2, "0"),
@@ -110,6 +114,7 @@ export default async function SubChapterPage({
               <Link href={bookHref(book.id)} className="topbar-book">{book.title}</Link>
             </>
           )}
+          {structure ? <StructureNav {...structure} /> : null}
           <ThemeToggle />
         </header>
         <ChapterStrip items={stripItems} />
