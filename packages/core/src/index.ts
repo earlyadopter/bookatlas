@@ -20,12 +20,16 @@ export {
 } from "./nav";
 export {
   chordSymbolNotes,
+  grandStaffSvg,
   keyboardDiagramSvg,
   musicFigureSvg,
   progressionDiagramSvg,
   parseNote,
   parseNoteSequence,
   parseProgression,
+  type Clef,
+  type GrandStaffOpts,
   type KeyboardDiagramOpts,
+  type MusicFigureOpts,
   type ProgressionDiagramOpts
 } from "./music";

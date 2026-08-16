@@ -187,25 +187,34 @@ const LETTER_STEP: Record<string, number> = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5
 const STAFF_GAP = 10; // distance between staff lines
 // Diatonic step of E4, the bottom treble line, with C4 = step 28.
 const E4_STEP = 30;
+// Bottom line of the bass staff is G2 (C2 = step 14).
+const G2_STEP = 18;
+
+export type Clef = "treble" | "bass";
 
 type StaffNote = { step: number; accidental: "" | "#" | "b" };
 
-function toStaffNotes(seq: { notes: ParsedNote[]; absolute: number[] }): StaffNote[] {
+function toStaffNotes(seq: { notes: ParsedNote[]; absolute: number[] }, clef: Clef = "treble"): StaffNote[] {
+  // parseNoteSequence normalizes the register to start near absolute 0; place
+  // that base octave where it reads naturally for the clef (C4 vs C3).
+  const base = clef === "bass" ? 21 : 28;
   return seq.notes.map((n, i) => ({
-    step: Math.floor(seq.absolute[i] / 12) * 7 + LETTER_STEP[n.letter] + 28,
+    step: Math.floor(seq.absolute[i] / 12) * 7 + LETTER_STEP[n.letter] + base,
     accidental: n.accidental
   }));
 }
 
 function staffGroup(
   staffNotes: StaffNote[],
-  stacked: boolean
+  stacked: boolean,
+  clef: Clef = "treble"
 ): { svg: string; width: number; height: number; midY: number } {
   const S = STAFF_GAP;
+  const bottomStep = clef === "bass" ? G2_STEP : E4_STEP;
   // Vertical envelope: staff spans 4*S; leave headroom for ledger lines.
   const topPad = 3 * S;
   const bottomLineY = topPad + 4 * S;
-  const yFor = (step: number) => bottomLineY - ((step - E4_STEP) * S) / 2;
+  const yFor = (step: number) => bottomLineY - ((step - bottomStep) * S) / 2;
 
   const clefW = 40;
   const noteGap = stacked ? 0 : 34;
@@ -239,20 +248,24 @@ function staffGroup(
     const y = topPad + i * S;
     parts.push(`<line x1="0" y1="${y}" x2="${width}" y2="${y}" stroke="#000" stroke-width="1.1"/>`);
   }
-  // Clef: musical glyph with wide font fallback; scaled to wrap the G line.
-  parts.push(
-    `<text x="2" y="${bottomLineY + 1}" font-family="'Bravura Text', 'Apple Symbols', 'Noto Music', 'Segoe UI Symbol', serif" font-size="${4.6 * S}" fill="#000">&#x1D11E;</text>`
-  );
+  // Clef: musical glyph with wide font fallback; treble wraps the G line,
+  // bass sits with its curl on the F line.
+  const CLEF_FONT = `font-family="'Bravura Text', 'Apple Symbols', 'Noto Music', 'Segoe UI Symbol', serif"`;
+  if (clef === "bass") {
+    parts.push(`<text x="4" y="${bottomLineY + 1}" ${CLEF_FONT} font-size="${4.1 * S}" fill="#000">&#x1D122;</text>`);
+  } else {
+    parts.push(`<text x="2" y="${bottomLineY + 1}" ${CLEF_FONT} font-size="${4.6 * S}" fill="#000">&#x1D11E;</text>`);
+  }
 
-  // Ledger lines (middle C and below; above-staff steps too).
+  // Ledger lines (below the staff and above it).
   const LEDGER_HALF = 12;
   for (const p of placed) {
-    for (let step = E4_STEP - 2; step >= p.step; step -= 2) {
+    for (let step = bottomStep - 2; step >= p.step; step -= 2) {
       parts.push(
         `<line x1="${p.x - LEDGER_HALF}" y1="${yFor(step)}" x2="${p.x + LEDGER_HALF}" y2="${yFor(step)}" stroke="#000" stroke-width="1.1"/>`
       );
     }
-    const topStep = E4_STEP + 10;
+    const topStep = bottomStep + 10;
     for (let step = topStep; step <= p.step; step += 2) {
       parts.push(
         `<line x1="${p.x - LEDGER_HALF}" y1="${yFor(step)}" x2="${p.x + LEDGER_HALF}" y2="${yFor(step)}" stroke="#000" stroke-width="1.1"/>`
@@ -281,8 +294,6 @@ function staffGroup(
     );
   }
 
-  const maxStepUsed = Math.max(...placed.map((p) => p.step), E4_STEP + 8);
-  const minY = Math.min(topPad - S, yFor(maxStepUsed) - S);
   const height = bottomLineY + 3 * S;
   return { svg: parts.join(""), width, height, midY: (topPad + bottomLineY) / 2 };
 }
@@ -290,6 +301,10 @@ function staffGroup(
 export type MusicFigureOpts = KeyboardDiagramOpts & {
   /** Force melody rendering even for third-stacks (e.g. arrow-notated motion). */
   sequence?: boolean;
+  /** Staff clef — "bass" places the figure in left-hand register. */
+  clef?: Clef;
+  /** Force a keyboard diagram alongside the staff even for melodies. */
+  keyboard?: boolean;
 };
 
 /**
@@ -300,10 +315,10 @@ export type MusicFigureOpts = KeyboardDiagramOpts & {
 export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): string | null {
   const seq = parseNoteSequence(noteText);
   if (!seq) return null;
-  const staffNotes = toStaffNotes(seq);
+  const staffNotes = toStaffNotes(seq, opts.clef);
   const diffs = staffNotes.slice(1).map((n, i) => n.step - staffNotes[i].step);
   const stacked = !opts.sequence && staffNotes.length <= 6 && diffs.every((d) => d >= 1 && d <= 3);
-  const staff = staffGroup(staffNotes, stacked);
+  const staff = staffGroup(staffNotes, stacked, opts.clef);
 
   const captionH = opts.caption || opts.figureLabel ? 32 : 6;
   const caption = (contentH: number, parts: string[]) => {
@@ -314,7 +329,7 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
     );
   };
 
-  if (!stacked) {
+  if (!stacked && !opts.keyboard) {
     // Melody: staff only.
     const height = staff.height + captionH;
     const parts = [
@@ -347,6 +362,75 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
   parts.push(`<g transform="translate(0 ${staffY})">${staff.svg}</g>`);
   parts.push(`<g transform="translate(${staff.width + GAP} ${kbY})">${kbInner}</g>`);
   caption(contentH, parts);
+  parts.push(`</svg>`);
+  return parts.join("");
+}
+
+export type GrandStaffOpts = KeyboardDiagramOpts & {
+  /** Force melody (left-to-right) rendering per hand; default auto like musicFigureSvg. */
+  sequence?: boolean;
+};
+
+/**
+ * Grand staff: right hand on a treble staff over left hand on a bass staff,
+ * joined by a brace. Each hand's notes follow the same stack-vs-melody
+ * heuristic as musicFigureSvg.
+ */
+export function grandStaffSvg(trebleText: string, bassText: string, opts: GrandStaffOpts = {}): string | null {
+  const trebleSeq = parseNoteSequence(trebleText);
+  const bassSeq = parseNoteSequence(bassText);
+  if (!trebleSeq || !bassSeq) return null;
+
+  const build = (seq: NonNullable<ReturnType<typeof parseNoteSequence>>, clef: Clef) => {
+    const notes = toStaffNotes(seq, clef);
+    const diffs = notes.slice(1).map((n, i) => n.step - notes[i].step);
+    const stacked = !opts.sequence && notes.length <= 6 && diffs.every((d) => d >= 1 && d <= 3);
+    return staffGroup(notes, stacked, clef);
+  };
+  const treble = build(trebleSeq, "treble");
+  const bass = build(bassSeq, "bass");
+
+  const BRACE_W = 14;
+  // Each staffGroup carries 3 spaces of padding top and bottom; overlap them
+  // so the staves sit a musical distance apart instead of doubled padding.
+  const STAVE_GAP = -4 * STAFF_GAP;
+  // Long captions must not clip: the viewBox is at least caption-wide.
+  const captionApprox = opts.caption || opts.figureLabel
+    ? ((opts.figureLabel?.length ?? 0) + (opts.caption?.length ?? 0)) * 8.4 + 24
+    : 0;
+  const width = Math.max(BRACE_W + Math.max(treble.width, bass.width), captionApprox);
+  const bassY = treble.height + STAVE_GAP;
+  const contentH = bassY + bass.height;
+  const captionH = opts.caption || opts.figureLabel ? 32 : 6;
+  const height = contentH + captionH;
+
+  // Brace spans from the treble top line to the bass bottom line.
+  const S = STAFF_GAP;
+  const braceTop = 3 * S;
+  const braceBottom = bassY + 3 * S + 4 * S;
+  const bm = (braceTop + braceBottom) / 2;
+
+  const parts: string[] = [];
+  parts.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`
+  );
+  // Drawn brace: two mirrored cubic curves meeting in a point at the middle.
+  parts.push(
+    `<path d="M ${BRACE_W - 2} ${braceTop} C 2 ${braceTop + 12}, 10 ${bm - 14}, 1 ${bm} C 10 ${bm + 14}, 2 ${braceBottom - 12}, ${BRACE_W - 2} ${braceBottom}" fill="none" stroke="#000" stroke-width="2.2"/>`
+  );
+  // Connecting barline at the staves' left edge.
+  parts.push(
+    `<line x1="${BRACE_W}" y1="${braceTop}" x2="${BRACE_W}" y2="${braceBottom}" stroke="#000" stroke-width="1.4"/>`
+  );
+  parts.push(`<g transform="translate(${BRACE_W} 0)">${treble.svg}</g>`);
+  parts.push(`<g transform="translate(${BRACE_W} ${bassY})">${bass.svg}</g>`);
+
+  if (opts.caption || opts.figureLabel) {
+    const label = opts.figureLabel ? `<tspan font-weight="700">${esc(opts.figureLabel)}</tspan>&#160;&#160;` : "";
+    parts.push(
+      `<text x="2" y="${contentH + 22}" ${FONT} font-size="15" fill="#000">${label}${esc(opts.caption ?? "")}</text>`
+    );
+  }
   parts.push(`</svg>`);
   return parts.join("");
 }

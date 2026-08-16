@@ -30,6 +30,9 @@ export function renderPlainHtml(markdown: string, opts: RenderOpts = {}): string
  * Fence-aware source cleanup:
  * - strip inline ChatGPT citation refs `([Label][1])` (their definitions are
  *   removed by the parser, so they'd render as dead literal text)
+ * - strip single-line HTML comments: the renderer escapes literal HTML, so
+ *   authoring tags (`<!--fig …-->`, `<!--explain …-->`) would otherwise show
+ *   as text. Dropping them here keeps unprocessed tags invisible to readers.
  */
 function cleanSource(markdown: string): string {
   const lines = markdown.split("\n");
@@ -41,7 +44,14 @@ function cleanSource(markdown: string): string {
       out.push(line);
       continue;
     }
-    out.push(inFence ? line : line.replace(/\s*\(\[[^\]]+\]\[\d+\]\)/g, ""));
+    if (inFence) {
+      out.push(line);
+      continue;
+    }
+    const cleaned = line.replace(/\s*\(\[[^\]]+\]\[\d+\]\)/g, "").replace(/<!--.*?-->/g, "");
+    // A line that was only a comment vanishes entirely (no stray blank paragraph).
+    if (cleaned.trim() === "" && line.trim() !== "") continue;
+    out.push(cleaned);
   }
   return out.join("\n");
 }
@@ -124,6 +134,7 @@ export function extractExcerpt(markdown: string): string | null {
     }
     if (/^#{1,6}\s/.test(trimmed)) continue;
     if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) continue;
+    if (trimmed.startsWith("<!--")) continue;
     if (paragraph.length === 0 && (trimmed.startsWith("|") || trimmed.startsWith("!["))) continue;
     paragraph.push(trimmed.replace(/^>\s?/, ""));
   }
