@@ -138,11 +138,15 @@ export type ProgressionDiagramOpts = KeyboardDiagramOpts;
 /** Boxed progression with arrows: ["ii","V","I"] or chord names. */
 export function progressionDiagramSvg(items: string[], opts: ProgressionDiagramOpts = {}): string | null {
   if (items.length < 2 || items.length > 8) return null;
-  const BOX = 62;
+  // Boxes widen (uniformly) when the longest label wouldn't fit at 15px;
+  // height stays fixed so long chord symbols don't produce giant squares.
+  const maxLen = Math.max(...items.map((i) => i.length));
+  const BOXW = Math.max(62, maxLen * 8 + 16);
+  const BOXH = 62;
   const GAP = 34;
-  const width = items.length * BOX + (items.length - 1) * GAP;
+  const width = items.length * BOXW + (items.length - 1) * GAP;
   const captionH = opts.caption || opts.figureLabel ? 34 : 8;
-  const height = BOX + captionH;
+  const height = BOXH + captionH;
 
   const parts: string[] = [];
   parts.push(
@@ -150,17 +154,17 @@ export function progressionDiagramSvg(items: string[], opts: ProgressionDiagramO
   );
   parts.push(`<g transform="translate(2 2)">`);
   items.forEach((item, i) => {
-    const x = i * (BOX + GAP);
+    const x = i * (BOXW + GAP);
     parts.push(
-      `<rect x="${x}" y="0" width="${BOX}" height="${BOX}" fill="${PROGRESSION_GRAYS[i % PROGRESSION_GRAYS.length]}" stroke="#000" stroke-width="1.5"/>`
+      `<rect x="${x}" y="0" width="${BOXW}" height="${BOXH}" fill="${PROGRESSION_GRAYS[i % PROGRESSION_GRAYS.length]}" stroke="#000" stroke-width="1.5"/>`
     );
     const fontSize = item.length > 4 ? 15 : item.length > 2 ? 18 : 21;
     parts.push(
-      `<text x="${x + BOX / 2}" y="${BOX / 2}" ${FONT} font-size="${fontSize}" fill="#111" text-anchor="middle" dominant-baseline="central">${esc(item)}</text>`
+      `<text x="${x + BOXW / 2}" y="${BOXH / 2}" ${FONT} font-size="${fontSize}" fill="#111" text-anchor="middle" dominant-baseline="central">${esc(item)}</text>`
     );
     if (i < items.length - 1) {
-      const ax = x + BOX + 6;
-      const ay = BOX / 2;
+      const ax = x + BOXW + 6;
+      const ay = BOXH / 2;
       parts.push(
         `<line x1="${ax}" y1="${ay}" x2="${ax + GAP - 18}" y2="${ay}" stroke="#000" stroke-width="2.5"/>` +
           `<path d="M ${ax + GAP - 18} ${ay - 5.5} L ${ax + GAP - 7} ${ay} L ${ax + GAP - 18} ${ay + 5.5} Z" fill="#000"/>`
@@ -169,7 +173,7 @@ export function progressionDiagramSvg(items: string[], opts: ProgressionDiagramO
   });
   parts.push(`</g>`);
   if (opts.caption || opts.figureLabel) {
-    const y = BOX + 26;
+    const y = BOXH + 26;
     const label = opts.figureLabel ? `<tspan font-weight="700">${esc(opts.figureLabel)}</tspan>&#160;&#160;` : "";
     parts.push(
       `<text x="4" y="${y}" ${FONT} font-size="15" fill="#000">${label}${esc(opts.caption ?? "")}</text>`
@@ -483,7 +487,9 @@ const LETTER_SEMITONE = [0, 2, 4, 5, 7, 9, 11];
 export function chordSymbolNotes(symbol: string): string | null {
   const m = symbol.trim().match(/^([A-G])([#♯b♭]?)(.+)$/);
   if (!m) return null;
-  const quality = m[3].trim();
+  // Normalize unicode accidentals in the quality ("m7♭5" → "m7b5") and the
+  // degree-circle-seven spelling ("°7"/"o7" → dim7).
+  const quality = m[3].trim().replace(/♭/g, "b").replace(/♯/g, "#").replace(/^[°o]7$/, "dim7");
   const formula = QUALITY_FORMULAS[quality];
   if (!formula) return null;
   const rootLetterIdx = LETTERS.indexOf(m[1]);

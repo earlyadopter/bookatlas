@@ -76,7 +76,9 @@ function renderFigTag(
       return svg ? { svg, caption } : `not a playable note sequence: "${main}"`;
     }
     case "chord": {
-      const spelled = CHORD_LABEL_RE.test(main) ? chordSymbolNotes(main) : null;
+      // chordSymbolNotes is the authority on what's spellable (it returns null
+      // for note lists), so no label-shape gate — "Bm7b5" is a fine symbol.
+      const spelled = chordSymbolNotes(main);
       const notes = spelled ?? main;
       if (!parseNoteSequence(notes)) return `not a chord symbol or note list: "${main}"`;
       const caption = captionFlag ?? (spelled ? `${main} = ${spelled}` : main);
@@ -96,8 +98,15 @@ function renderFigTag(
       return svg ? { svg, caption } : `could not render hands: "${main}"`;
     }
     case "progression": {
-      const items = parseProgression(main);
-      if (!items) return `not a progression (3–8 items): "${main}"`;
+      // Explicit tags skip parseProgression's strict item validation — that
+      // strictness exists to avoid auto-detection false positives, but an
+      // author asking for boxes gets boxes ("G7alt", "Cm(maj7)/B", "B°" are
+      // all legitimate labels the prose-detector rightly refuses to guess at).
+      const items = main
+        .split(/\s*(?:→|—>|->|–|—|>)\s*|\s+-\s+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (items.length < 2 || items.length > 8) return `not a progression (2–8 items): "${main}"`;
       const caption = captionFlag ?? items.join(" → ");
       const svg = progressionDiagramSvg(items, { caption, figureLabel });
       return svg ? { svg, caption } : `could not render progression: "${main}"`;
