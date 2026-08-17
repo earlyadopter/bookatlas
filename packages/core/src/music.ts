@@ -321,6 +321,10 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
   const staff = staffGroup(staffNotes, stacked, opts.clef);
 
   const captionH = opts.caption || opts.figureLabel ? 32 : 6;
+  // Long captions must not clip: the viewBox is at least caption-wide.
+  const captionApprox = opts.caption || opts.figureLabel
+    ? ((opts.figureLabel?.length ?? 0) + (opts.caption?.length ?? 0)) * 8.4 + 24
+    : 0;
   const caption = (contentH: number, parts: string[]) => {
     if (!opts.caption && !opts.figureLabel) return;
     const label = opts.figureLabel ? `<tspan font-weight="700">${esc(opts.figureLabel)}</tspan>&#160;&#160;` : "";
@@ -331,9 +335,10 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
 
   if (!stacked && !opts.keyboard) {
     // Melody: staff only.
+    const width = Math.max(staff.width, captionApprox);
     const height = staff.height + captionH;
     const parts = [
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${staff.width} ${height}" width="${staff.width}" height="${height}">`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`,
       staff.svg
     ];
     caption(staff.height, parts);
@@ -349,7 +354,7 @@ export function musicFigureSvg(noteText: string, opts: MusicFigureOpts = {}): st
 
   const GAP = 26;
   const contentH = Math.max(staff.height, kbH);
-  const width = staff.width + GAP + kbW;
+  const width = Math.max(staff.width + GAP + kbW, captionApprox);
   const height = contentH + captionH;
 
   const staffY = Math.max(0, (contentH - staff.height) / 2);
