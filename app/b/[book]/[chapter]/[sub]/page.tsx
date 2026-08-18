@@ -45,7 +45,7 @@ function MiniTile({
   );
 }
 
-export { generateStaticParams } from "@/lib/staticParams";
+export { subStaticParams as generateStaticParams } from "@/lib/staticParams";
 
 export default async function SubChapterPage({
   params,

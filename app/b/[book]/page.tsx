@@ -14,7 +14,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 // Consecutive chapters sharing a part/group render as one titled grid.
 type Section = { group: string | null; part: string | null; chapters: Chapter[] };
 
-export { generateStaticParams } from "@/lib/staticParams";
+export { bookStaticParams as generateStaticParams } from "@/lib/staticParams";
 
 export default async function BookPage({
   params,

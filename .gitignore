@@ -8,3 +8,7 @@ books.config.local.json
 planning/
 .obsidian/
 .vercel
+
+# staged book assets (build artifact)
+public/asset/
+public/b/

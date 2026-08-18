@@ -13,7 +13,7 @@ import { buildStructure } from "@/lib/structure";
 
 
 
-export { generateStaticParams } from "@/lib/staticParams";
+export { chapterStaticParams as generateStaticParams } from "@/lib/staticParams";
 
 export default async function ChapterPage({
   params,
