@@ -22,7 +22,21 @@ const nextConfig: NextConfig = {
       beforeFiles: [],
       // Only rewrites when no file/page matched (/_next, robots.txt, /b/*
       // stay intact); the root is handled by app/page.tsx rendering the book.
-      afterFiles: [{ source: "/:path*", destination: `/b/${singleBook}/:path*` }],
+      //
+      // Sources are constrained to real URL shapes — slug-charset segments at
+      // chapter/sub depth, plus the asset fallback — instead of a `/:path*`
+      // catch-all. Anything else (scanner probes like /wp-login.php, /.env,
+      // deep or dotted paths) falls through to the prebuilt static 404. With
+      // the old catch-all each such URL reached the ISR-enabled book routes
+      // and bought a billed cache write for a 404 nobody requests twice.
+      afterFiles: [
+        { source: "/asset/:file*", destination: `/b/${singleBook}/asset/:file*` },
+        { source: "/:chapter([A-Za-z0-9_-]+)", destination: `/b/${singleBook}/:chapter` },
+        {
+          source: "/:chapter([A-Za-z0-9_-]+)/:sub([A-Za-z0-9_-]+)",
+          destination: `/b/${singleBook}/:chapter/:sub`
+        }
+      ],
       fallback: []
     };
   },
