@@ -560,12 +560,20 @@ a {
   padding: 4px 10px;
 }
 
+/* The number never shrinks or wraps in the one-line rows; the title takes
+   the ellipsis. Without this, long titles squeezed "2.10" into "2…". */
+.mini.far .mini-num {
+  flex: none;
+  white-space: nowrap;
+}
+
 .mini.far .mini-title {
   -webkit-line-clamp: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 0.72rem;
+  min-width: 0;
 }
 
 /* ── Stage (the zoomed article) ───────────────────────────────────────── */
