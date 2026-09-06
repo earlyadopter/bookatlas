@@ -101,9 +101,15 @@ export function parseSingleFileBook(raw: string): ParsedBook {
   const usedChapterSlugs = new Set<string>();
   const chapters = boundaries.map((b, idx) => {
     const end = idx + 1 < boundaries.length ? boundaries[idx + 1].line : lines.length;
-    const bodyLines = lines
-      .slice(b.line + 1, end)
-      .filter((_, off) => !partLines.has(b.line + 1 + off));
+    // PART dividers are dropped from the body; origIndex keeps each kept
+    // line's position in the file so sections can report source ranges.
+    const bodyLines: string[] = [];
+    const origIndex: number[] = [];
+    for (let i = b.line + 1; i < end; i++) {
+      if (partLines.has(i)) continue;
+      bodyLines.push(lines[i]);
+      origIndex.push(i);
+    }
     const displayTitle = b.title || `Chapter ${b.number ?? idx + 1}`;
 
     let slug = b.number !== null ? `chapter-${String(b.number).padStart(2, "0")}` : slugify(displayTitle);
@@ -120,7 +126,11 @@ export function parseSingleFileBook(raw: string): ParsedBook {
       part: b.part,
       introMd: null as string | null,
       preambleMd: null as string | null,
-      subchapters: splitByDepth(bodyLines, chapterNumber, subDepth)
+      subchapters: splitByDepth(bodyLines, chapterNumber, subDepth, origIndex, end),
+      sourceStart: b.line,
+      // Ends after the last body line kept, so a PART divider that opens
+      // the next part is not counted as part of this chapter.
+      sourceEnd: lastContentEnd(bodyLines, origIndex, b.line + 1)
     };
   });
 
@@ -130,7 +140,9 @@ export function parseSingleFileBook(raw: string): ParsedBook {
 function splitByDepth(
   bodyLines: string[],
   chapterNumber: number | null,
-  subDepth: number
+  subDepth: number,
+  origIndex: number[],
+  chapterEnd: number
 ): SubChapter[] {
   const subRe = new RegExp(`^#{${subDepth}}\\s+(.+)$`);
   type SubBoundary = { line: number; title: string };
@@ -152,7 +164,13 @@ function splitByDepth(
   const result: SubChapter[] = [];
   const usedSlugs = new Set<string>();
 
-  const push = (rawTitle: string, body: string[], numbered: boolean) => {
+  const push = (
+    rawTitle: string,
+    body: string[],
+    numbered: boolean,
+    sourceStart: number,
+    sourceEnd: number
+  ) => {
     // Some books number their section headings themselves ("## 5.1 Origin…");
     // the tile chrome already shows the number, so drop it from the title.
     const titleText = rawTitle.replace(/^\d+\.\d+\.?\s+/, "");
@@ -177,21 +195,37 @@ function splitByDepth(
       hasInterviewBlocks,
       wordCount: countWords(body),
       codeFenceCount,
-      excerpt: extractExcerpt(bodyMd)
+      excerpt: extractExcerpt(bodyMd),
+      sourceStart,
+      sourceEnd
     });
   };
+  // Exclusive end in file coordinates for a body-local end offset. The last
+  // section ends after the last kept body line, so trailing PART dividers
+  // (dropped from bodies) never fall inside an editable range.
+  const fileEnd = (localEnd: number) =>
+    localEnd < bodyLines.length ? origIndex[localEnd] : lastContentEnd(bodyLines, origIndex, chapterEnd);
 
   // Chapter intro (before the first ##): meaty ones become an "Overview" tile,
   // trivial ones are dropped (they're usually a single transition sentence).
   const introEnd = subs.length > 0 ? subs[0].line : bodyLines.length;
   const introLines = bodyLines.slice(0, introEnd);
-  if (countWords(introLines) > 25) push("Overview", introLines, true);
+  if (countWords(introLines) > 25) push("Overview", introLines, true, origIndex[0], fileEnd(introEnd));
 
   for (let i = 0; i < subs.length; i++) {
     const end = i + 1 < subs.length ? subs[i + 1].line : bodyLines.length;
-    push(subs[i].title, bodyLines.slice(subs[i].line + 1, end), true);
+    push(subs[i].title, bodyLines.slice(subs[i].line + 1, end), true, origIndex[subs[i].line], fileEnd(end));
   }
   return result;
+}
+
+// Exclusive file line after the last non-blank kept body line; trailing
+// blanks and dropped PART dividers stay outside every editable range.
+function lastContentEnd(bodyLines: string[], origIndex: number[], fallback: number): number {
+  for (let k = bodyLines.length - 1; k >= 0; k--) {
+    if (bodyLines[k].trim() !== "") return origIndex[k] + 1;
+  }
+  return fallback;
 }
 
 function titleCasePart(text: string): string {

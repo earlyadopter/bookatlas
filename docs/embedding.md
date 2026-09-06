@@ -28,14 +28,17 @@ The reusable pieces live in [`packages/core`](../packages/core) as the
 `@bookatlas/core` package — parsers and helpers from `.`, interaction
 components from `./components`. The components are **href-agnostic**
 (`ChapterStrip` takes precomputed `{ href, num, title, current }` items,
-`KeyNav` takes five hrefs), so they drop into any route shape without
+`KeyNav` takes five hrefs, `FilterChips` one href per chip) and never import
+a framework router — wrap your tree in `AtlasNavProvider` with your own
+`Link`/`push`/`usePathname` (see `components/NextAtlasNav.tsx` for the
+Next.js one), so they drop into any route shape without
 surgery. It ships TypeScript source: add
 `transpilePackages: ["@bookatlas/core"]` to your `next.config.ts`, and until
 it's on npm, consume it as a git dependency. See the
 [package README](../packages/core/README.md) for the API contract.
 
-What the package does *not* carry yet is the CSS — copy the atlas block from
-`app/globals.css` and adapt it (step 1 below).
+The stylesheet ships with it: `import "@bookatlas/core/atlas.css"` once and
+override tokens (`--accent`, `--font-*-stack`) after it (step 1 below).
 
 ### Fallback: what to vendor
 
@@ -53,7 +56,7 @@ The interaction layer — it's small and self-contained:
   top of the reading view.
 - **`packages/core/src/components/FilterChips.tsx`** — only if you want
   content-type filters.
-- **The atlas CSS block from `app/globals.css`** — grids, tiles, rails, stage.
+- **`packages/core/src/atlas.css`** — tokens, grids, tiles, rails, stage (importable as `@bookatlas/core/atlas.css`).
 - **A parser from `packages/core/src/`** — only if your content is markdown
   books in Bookatlas's shape (`parseChapter` for chapter-file books,
   `parseSingleFileBook` for one-file books). If your site already has a
@@ -100,8 +103,9 @@ from the host's existing content tree — no book registry at all.
 
 ### Known friction (so you can budget for it)
 
-- The CSS is not bundled with the package yet — copying and adapting the
-  atlas block from `app/globals.css` is a real (one-time) chunk of the work.
+- The stylesheet is one global file with plain class names (`.sub-tile`,
+  `.strip-pill`, …); if your site already uses those names you will need a
+  wrapper selector or to vendor and rename.
 - If you vendor instead of depending on the package, a vendored parser is a
   fork: upstream parsing fixes don't reach you automatically. Give copied
   files one home (a `components/atlas/` directory) rather than importing

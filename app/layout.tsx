@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "@bookatlas/core/atlas.css";
 import "./globals.css";
 // Self-hosted fonts (Fontsource): bundled at build, no fonts.google.com
 // dependency — transient CDN failures were breaking production deploys.
@@ -12,6 +13,7 @@ import "@fontsource/ibm-plex-sans/cyrillic-500.css";
 import "@fontsource/ibm-plex-sans/cyrillic-600.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import { RouteListener } from "@bookatlas/core/components";
+import { NextAtlasNav } from "@/components/NextAtlasNav";
 
 export const metadata: Metadata = {
   title: { default: "Bookatlas", template: "%s — Bookatlas" },
@@ -54,8 +56,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             />
           </>
         ) : null}
-        <RouteListener />
-        {children}
+        <NextAtlasNav>
+          <RouteListener />
+          {children}
+        </NextAtlasNav>
       </body>
     </html>
   );

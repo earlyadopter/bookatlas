@@ -7,7 +7,8 @@ can depend on a package instead of vendoring files. MIT.
 ```ts
 import { parseChapter, parseSingleFileBook, renderSubChapterHtml,
          flattenBook, getPrevNext, slugify } from "@bookatlas/core";
-import { TransitionLink, RouteListener, KeyNav,
+import { buildBook } from "@bookatlas/core";
+import { AtlasNavProvider, TransitionLink, RouteListener, KeyNav,
          ChapterStrip, FilterChips } from "@bookatlas/core/components";
 ```
 
@@ -17,15 +18,24 @@ import { TransitionLink, RouteListener, KeyNav,
   you own loading (disk, fetch, database) and pass markdown in. The parsers
   are the corpus-tuned ones documented in
   [docs/parser-overrides.md](../../docs/parser-overrides.md).
-- **Components are href-agnostic.** `ChapterStrip` takes precomputed
-  `StripItem`s (`{ href, num, title, current }`), `KeyNav` takes five hrefs,
-  `FilterChips` takes a base path — no URL shape is imposed, so they drop
-  into any route structure. `TransitionLink`/`RouteListener` provide the
-  View Transitions zoom morph (mount `RouteListener` once in your root
-  layout).
-- **Styles are not bundled (yet).** Copy the atlas CSS block from the repo's
-  `app/globals.css` and adapt its tokens to your site — see
-  [docs/embedding.md](../../docs/embedding.md) for the full recipe.
+- **Components are href-agnostic and router-agnostic.** `ChapterStrip`
+  takes precomputed `StripItem`s (`{ href, num, title, current }`), `KeyNav`
+  takes five hrefs, `FilterChips` takes one href per chip — no URL shape is
+  imposed. They get their `Link`, `push()` and `usePathname()` from
+  `AtlasNavProvider`; wrap your tree once with your framework's router (the
+  repo's `components/NextAtlasNav.tsx` is the Next.js adapter; without a
+  provider you get plain anchors and full page loads).
+  `TransitionLink`/`RouteListener` provide the View Transitions zoom morph
+  (mount `RouteListener` once inside the provider).
+- **Book assembly is pure too.** `buildBook(files, options)` turns
+  `{ name, content }` records into a rendered `Book`; `buildChapter` /
+  `buildSingleFileChapters` / `assembleBook` are the layers underneath for
+  callers that cache per file. Sections carry `sourceStart`/`sourceEnd` line
+  ranges for editors.
+- **The stylesheet ships with the package.** `import "@bookatlas/core/atlas.css"`
+  once (tokens, tiles, strip, zoom view, rendered markdown, responsive rules)
+  and override tokens such as `--accent` or `--font-*-stack` after it. Fonts
+  are yours to load. See [docs/embedding.md](../../docs/embedding.md).
 
 ## Consuming
 

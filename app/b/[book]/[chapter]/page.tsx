@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBook } from "@/lib/loadBook";
 import { matchesFilter, parseFilter } from "@bookatlas/core";
-import { bookHref, chapterHref, subHref } from "@/lib/hrefs";
+import { bookHref, chapterHref, filterHrefs, subHref } from "@/lib/hrefs";
 import { ChapterStrip, FilterChips, TransitionLink } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -77,7 +77,7 @@ export default async function ChapterPage({
       <h1 className="page-title" id="page-heading">{chapter.fullTitle}</h1>
       {showFilters ? (
         <FilterChips
-          basePath={`/b/${book.id}/${chapter.slug}`}
+          hrefs={filterHrefs(book.id, chapter.slug)}
           active={filter}
           counts={book.tagCounts}
         />

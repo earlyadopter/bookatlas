@@ -1,34 +1,36 @@
-import Link from "next/link";
-import type { Tag } from "../types";
+"use client";
 
-const LABELS: { key: Tag; label: string }[] = [
+import type { Tag } from "../types";
+import { useAtlasNav } from "./navigation";
+
+const LABELS: { key: Exclude<Tag, "teaser">; label: string }[] = [
   { key: "interview", label: "Interview Q&A" },
   { key: "cheatsheet", label: "Cheat sheets" },
   { key: "code", label: "Code" }
 ];
 
-// Server component: chips are plain links carrying ?f= so every filter state
-// is a bookmarkable URL.
+/** Precomputed destinations, one per chip — the component imposes no URL shape. */
+export type FilterHrefs = Record<"all" | Exclude<Tag, "teaser">, string>;
+
+// Chips are plain links carrying the filter in the href so every filter
+// state is a bookmarkable URL.
 export function FilterChips({
-  basePath,
+  hrefs,
   active,
   counts
 }: {
-  basePath: string;
+  hrefs: FilterHrefs;
   active: Tag | null;
   counts: Record<Tag, number>;
 }) {
+  const { Link } = useAtlasNav();
   return (
     <div className="chips" role="group" aria-label="Content filters">
-      <Link href={basePath} className={active === null ? "chip current" : "chip"}>
+      <Link href={hrefs.all} className={active === null ? "chip current" : "chip"}>
         All
       </Link>
       {LABELS.map(({ key, label }) => (
-        <Link
-          key={key}
-          href={`${basePath}?f=${key}`}
-          className={active === key ? "chip current" : "chip"}
-        >
+        <Link key={key} href={hrefs[key]} className={active === key ? "chip current" : "chip"}>
           {label} <span className="chip-count">{counts[key]}</span>
         </Link>
       ))}

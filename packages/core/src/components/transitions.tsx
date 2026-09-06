@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useLayoutEffect } from "react";
 import type { CSSProperties, ReactNode } from "react";
+import { useAtlasNav } from "./navigation";
 
 // Zoom morph, tier 2 of the plan: manual document.startViewTransition around
 // router.push, with a pathname-change promise so the snapshot holds until the
@@ -40,6 +39,7 @@ export function navigateWithTransition(router: RouterLike, href: string) {
 
 /** Mounted once in the root layout; releases the held snapshot on route commit. */
 export function RouteListener() {
+  const { usePathname } = useAtlasNav();
   const pathname = usePathname();
   useLayoutEffect(() => {
     pendingResolve?.();
@@ -63,7 +63,8 @@ export function TransitionLink({
   style?: CSSProperties;
   children: ReactNode;
 } & Record<string, unknown>) {
-  const router = useRouter();
+  const nav = useAtlasNav();
+  const { Link } = nav;
   return (
     <Link
       href={href}
@@ -77,7 +78,7 @@ export function TransitionLink({
         if (morph) {
           (e.currentTarget as HTMLElement).style.viewTransitionName = MORPH_NAME;
         }
-        navigateWithTransition(router, href);
+        navigateWithTransition(nav, href);
       }}
     >
       {children}

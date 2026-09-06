@@ -1,7 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadBooksConfig } from "../lib/config";
-import { parseChapter, parseSingleFileBook, type ParsedChapter, type Tag } from "@bookatlas/core";
+import {
+  parseChapter,
+  parseSingleFileBook,
+  selectChapterFiles,
+  type ParsedChapter,
+  type Tag
+} from "@bookatlas/core";
 
 // CLI tripwire for the corpus-tuned parsers: prints per-chapter stats and
 // exits 1 on structural anomalies (missed splits, leaked headings, number
@@ -27,17 +33,12 @@ async function main() {
       const parsed = parseSingleFileBook(fs.readFileSync(file, "utf8"));
       chapters = parsed.chapters.map((ch) => ({ ...ch, file }));
     } else {
-      let files = fs
-        .readdirSync(config.path)
-        .filter((f) => f.endsWith(".md") && !f.startsWith("."));
-      // Same ordering rules as loadBook: an explicit fileOrder replaces the
-      // filename sort and acts as an allowlist.
-      if (config.parser?.fileOrder) {
-        const order = config.parser.fileOrder;
-        files = order.filter((f) => files.includes(f));
-      } else {
-        files.sort((a, b) => a.localeCompare(b));
-      }
+      // Same selection + ordering rules as the runtime (ignore prefixes, an
+      // explicit fileOrder replacing the filename sort as an allowlist).
+      const files = selectChapterFiles(fs.readdirSync(config.path), {
+        ignore: config.ignore,
+        fileOrder: config.parser?.fileOrder
+      });
       chapters = files.map((f) => {
         const file = path.join(config.path, f);
         return { ...parseChapter(f, fs.readFileSync(file, "utf8"), config.parser), file };

@@ -10,6 +10,17 @@ export {
   type RenderOpts
 } from "./renderMarkdown";
 export { computeTags } from "./tags";
+export {
+  assembleBook,
+  buildBook,
+  buildChapter,
+  buildSingleFileChapters,
+  selectChapterFiles,
+  type AssembleOptions,
+  type BuildBookOptions,
+  type BuildOptions,
+  type SourceFile
+} from "./buildBook";
 export { slugify, bookHref, chapterHref, subHref } from "./slugs";
 export {
   flattenBook,

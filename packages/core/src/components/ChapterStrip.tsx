@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { useAtlasNav } from "./navigation";
 
 export type StripItem = {
   /** Precomputed destination — the component imposes no URL shape. */
@@ -24,6 +24,7 @@ export function ChapterStrip({
   items: StripItem[];
   label?: string;
 }) {
+  const { Link } = useAtlasNav();
   const stripRef = useRef<HTMLElement>(null);
   const currentRef = useRef<HTMLAnchorElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Chapter } from "@bookatlas/core";
 import { getBook } from "@/lib/loadBook";
 import { matchesFilter, parseFilter } from "@bookatlas/core";
-import { chapterHref } from "@/lib/hrefs";
+import { chapterHref, filterHrefs } from "@/lib/hrefs";
 import { partAnchor } from "@/lib/structure";
 import { FilterChips } from "@bookatlas/core/components";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -60,7 +60,7 @@ export default async function BookPage({
       </div>
       <h1 className="page-title">{book.title}</h1>
       {showFilters ? (
-        <FilterChips basePath={`/b/${book.id}`} active={filter} counts={book.tagCounts} />
+        <FilterChips hrefs={filterHrefs(book.id)} active={filter} counts={book.tagCounts} />
       ) : null}
       {sections.map((section, si) => {
         const groupHeading = section.group && section.group !== prevGroup ? section.group : null;

@@ -173,7 +173,9 @@ export function parseChapter(
       hasInterviewBlocks,
       wordCount: countWords(bodyLines),
       codeFenceCount,
-      excerpt: extractExcerpt(mdBody)
+      excerpt: extractExcerpt(mdBody),
+      sourceStart: b.line,
+      sourceEnd: end
     };
   });
 
@@ -184,7 +186,9 @@ export function parseChapter(
     fullTitle,
     introMd,
     preambleMd,
-    subchapters
+    subchapters,
+    sourceStart: Math.max(chapterLine, 0),
+    sourceEnd: lines.length
   };
 }
 

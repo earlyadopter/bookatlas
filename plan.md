@@ -51,6 +51,9 @@ spellings and progression lines; these become textbook-style figures.
 - [x] parse:check: respect parser.fileOrder (loadBook orders/filters by it; the checker still sorts all filenames)
 - [x] embed-friendly component APIs — ChapterStrip should take precomputed hrefs instead of importing lib/slugs (the modernQAcourse vendoring had to rewrite it; makes the docs/embedding.md recipe near drop-in)
 - [x] publishable core package — extract lib/ (parsers, tags, slugs, nav) + interaction components into an npm package embedders can depend on instead of vendoring (builds on the embed-friendly APIs ticket)
+- [x] router-agnostic components: AtlasNavProvider (Link/push/usePathname) replaces next/link + next/navigation inside @bookatlas/core; components/NextAtlasNav.tsx is the Next adapter. Prerequisite for the Mac app's static bundle and for the drop-a-folder browser mode.
+- [x] pure book assembly in core: buildBook / buildChapter / buildSingleFileChapters / assembleBook; lib/loadBook.ts is now only the disk + mtime-cache adapter. Sections carry sourceStart/sourceEnd line ranges (editor splice).
 - [ ] npm publish @bookatlas/core (account action; until then consumers use a git dependency + transpilePackages)
-- [ ] ship the atlas stylesheet with @bookatlas/core (tokens + strip/stage/tile classes) so embedders stop copying from app/globals.css
+- [x] ship the atlas stylesheet with @bookatlas/core (`@bookatlas/core/atlas.css`; app/globals.css keeps only landing/library/footer/structure-nav rules and layout.tsx imports both) (2026-09-06)
+- [ ] Mac app (apps/mac, SwiftUI + WKWebView over a atlas:// scheme handler; phases and findings in planning/mac-app.md): Phases 0–2 done (spike, core decoupling, the static atlas bundle in packages/atlas-ui); next is the shell (recents via bookmarks, FSEvents live reload, menu shortcuts, app icon), then editing
 - [ ] second demo book, unrelated subject, so the landing doesn't read MuleSoft-specific — candidate: a "Bookatlas Handbook" assembled from the repo's own guides (needs restructuring into numbered-section book shape; content review before it goes public)

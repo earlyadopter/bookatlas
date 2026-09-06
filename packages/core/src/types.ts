@@ -58,6 +58,10 @@ export interface SubChapter {
   wordCount: number;
   codeFenceCount: number;
   excerpt: string | null;
+  /** 0-based index of the section's heading line in the source file. */
+  sourceStart: number;
+  /** Exclusive end line: the next boundary's heading, or the chapter/file end. */
+  sourceEnd: number;
 }
 
 export interface Chapter {
@@ -79,6 +83,9 @@ export interface Chapter {
   /** Parent group above parts (config-assigned), e.g. "Theory". */
   partGroup?: string | null;
   subchapters: SubChapter[];
+  /** Line range of the chapter within its source file (heading line to exclusive end). */
+  sourceStart: number;
+  sourceEnd: number;
 }
 
 export interface Book {
