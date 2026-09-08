@@ -95,10 +95,13 @@ export default async function ChapterPage({
       <div className="sub-grid">
         {chapter.subchapters.map((sub, i) => {
           const dimmed = filter !== null && !matchesFilter(sub, filter);
-          const group = sub.group && sub.group !== chapter.subchapters[i - 1]?.group ? sub.group : null;
+          const prevGroup = chapter.subchapters[i - 1]?.group ?? null;
+          const group = sub.group && sub.group !== prevGroup ? sub.group : null;
+          const groupEnd = !sub.group && prevGroup !== null;
           return (
             <Fragment key={sub.slug}>
             {group ? <h3 className="sub-group">{group}</h3> : null}
+            {groupEnd ? <div className="sub-group-end" /> : null}
             <TransitionLink
               href={subHref(book.id, chapter.slug, sub.slug, filter ?? undefined)}
               className={dimmed ? "sub-tile dimmed" : "sub-tile"}

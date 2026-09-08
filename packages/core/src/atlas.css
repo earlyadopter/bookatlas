@@ -492,6 +492,14 @@ a {
   border-bottom: 1px solid var(--line);
 }
 
+/* Row break after a group's run, so the next ungrouped tile does not sit on
+   the same row as the group's last section. */
+.sub-group-end {
+  grid-column: 1 / -1;
+  height: 0;
+  margin-top: 6px;
+}
+
 /* ── Zoom view: rails + stage ─────────────────────────────────────────── */
 
 .zoom {
