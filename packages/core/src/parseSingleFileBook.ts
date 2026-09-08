@@ -5,13 +5,18 @@ import { slugify } from "./slugs";
 import { extractExcerpt } from "./renderMarkdown";
 
 // Parser profile for well-formed single-file books (one big book.md).
-// Two depth conventions exist in the corpus and are auto-detected per book:
+// Three heading conventions are auto-detected per book:
 //   A: chapters `# Chapter N: Title` (H1), sub-chapters `##`
 //   B: chapters `## Chapter N: Title` (H2), sub-chapters `###`
-// `# PART ...` / `# Part ...` H1s are section dividers in both conventions —
+//   C: numbered outlines — chapters `# N. Title` (H1), sub-chapters `##`
+//      (numbered `## N.M Title` or plain), plus `# N.M Title` H1s that
+//      authors sometimes use for sub-chapters. PRDs, specs, plans.
+// `# PART ...` / `# Part ...` H1s are section dividers in every convention —
 // they become a `part` label on following chapters. Appendix/Glossary-style
 // trailing headings at the chapter depth (or H1) are unnumbered chapters.
 // Unrecognized headings (stray code comments outside fences) stay in the body.
+// A chapter with no sub-chapters becomes one section carrying the chapter's
+// title, so every chapter is reachable in the zoom view and in reading order.
 
 const APPENDIX_TITLE = /^(Appendix\s+[A-Z][:.]?\s*.*|Glossary\b.*|Conclusion\b.*|Epilogue\b.*|Bibliography\b.*|Further Reading\b.*|Index\b.*)$/;
 const PART_RE = /^# ((?:PART|Part)\b.*)$/;
@@ -22,29 +27,53 @@ export type ParsedBook = {
   chapters: ParsedChapter[];
 };
 
+/** Fence-aware count of chapter headings per convention. */
+function countConventions(lines: string[]): { h1Chapters: number; h2Chapters: number; outline: number } {
+  let h1Chapters = 0;
+  let h2Chapters = 0;
+  let outline = 0;
+  let inFence = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^(```|~~~)/.test(trimmed)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    if (/^# Chapter\s+\d+/.test(trimmed)) h1Chapters++;
+    else if (/^## Chapter\s+\d+/.test(trimmed)) h2Chapters++;
+    else if (OUTLINE_CHAPTER.test(trimmed)) outline++;
+  }
+  return { h1Chapters, h2Chapters, outline };
+}
+
+const OUTLINE_CHAPTER = /^# (\d+)\.\s+(\S.*)$/;
+const OUTLINE_H1_SUB = /^#\s+\d+\.\d+\.?\s+(.+)$/;
+
+/**
+ * Does this file read as a whole book (chapters + sections) rather than as
+ * one chapter? True for `# Chapter N` / `## Chapter N` books and for numbered
+ * outlines with at least two `# N. Title` headings.
+ */
+export function looksLikeSingleFileBook(raw: string): boolean {
+  const c = countConventions(raw.split(/\r?\n/));
+  return c.h1Chapters + c.h2Chapters > 0 || c.outline >= 2;
+}
+
 export function parseSingleFileBook(raw: string): ParsedBook {
   const lines = raw.split(/\r?\n/);
 
-  // Detect the chapter heading depth (convention A vs B), fence-aware.
-  let h1Chapters = 0;
-  let h2Chapters = 0;
-  {
-    let inFence = false;
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (/^(```|~~~)/.test(trimmed)) {
-        inFence = !inFence;
-        continue;
-      }
-      if (inFence) continue;
-      if (/^# Chapter\s+\d+/.test(trimmed)) h1Chapters++;
-      else if (/^## Chapter\s+\d+/.test(trimmed)) h2Chapters++;
-    }
-  }
+  // Detect the heading convention, fence-aware.
+  const { h1Chapters, h2Chapters, outline } = countConventions(lines);
+  const isOutline = h1Chapters + h2Chapters === 0 && outline >= 2;
   const chapterDepth = h2Chapters > h1Chapters ? 2 : 1;
-  const chapterRe = new RegExp(`^#{${chapterDepth}} Chapter\\s+(\\d+)\\s*[:.]?\\s*(.*)$`);
+  const chapterRe = isOutline
+    ? OUTLINE_CHAPTER
+    : new RegExp(`^#{${chapterDepth}} Chapter\\s+(\\d+)\\s*[:.]?\\s*(.*)$`);
   const appendixRe = new RegExp(`^#{1,${chapterDepth}} (.+)$`);
   const subDepth = chapterDepth + 1;
+  // Outline authors sometimes write sub-chapters as `# 7.1 Title` H1s.
+  const extraSubRes = isOutline ? [OUTLINE_H1_SUB] : [];
 
   type Boundary = { line: number; number: number | null; title: string; part: string | null };
   const boundaries: Boundary[] = [];
@@ -126,7 +155,7 @@ export function parseSingleFileBook(raw: string): ParsedBook {
       part: b.part,
       introMd: null as string | null,
       preambleMd: null as string | null,
-      subchapters: splitByDepth(bodyLines, chapterNumber, subDepth, origIndex, end),
+      subchapters: splitByDepth(bodyLines, chapterNumber, subDepth, origIndex, end, extraSubRes, displayTitle),
       sourceStart: b.line,
       // Ends after the last body line kept, so a PART divider that opens
       // the next part is not counted as part of this chapter.
@@ -142,9 +171,11 @@ function splitByDepth(
   chapterNumber: number | null,
   subDepth: number,
   origIndex: number[],
-  chapterEnd: number
+  chapterEnd: number,
+  extraSubRes: RegExp[] = [],
+  chapterTitle = "Overview"
 ): SubChapter[] {
-  const subRe = new RegExp(`^#{${subDepth}}\\s+(.+)$`);
+  const subRes = [new RegExp(`^#{${subDepth}}\\s+(.+)$`), ...extraSubRes];
   type SubBoundary = { line: number; title: string };
   const subs: SubBoundary[] = [];
   {
@@ -156,8 +187,13 @@ function splitByDepth(
         continue;
       }
       if (inFence) continue;
-      const h = trimmed.match(subRe);
-      if (h) subs.push({ line: i, title: h[1].trim() });
+      for (const re of subRes) {
+        const h = trimmed.match(re);
+        if (h) {
+          subs.push({ line: i, title: h[1].trim() });
+          break;
+        }
+      }
     }
   }
 
@@ -169,7 +205,8 @@ function splitByDepth(
     body: string[],
     numbered: boolean,
     sourceStart: number,
-    sourceEnd: number
+    sourceEnd: number,
+    explicitNumber?: string
   ) => {
     // Some books number their section headings themselves ("## 5.1 Origin…");
     // the tile chrome already shows the number, so drop it from the title.
@@ -177,7 +214,7 @@ function splitByDepth(
     const bodyMd = joinTrimmed(body) ?? "";
     const { tags, hasInterviewBlocks, codeFenceCount } = computeTags(titleText, body);
     const displayNumber =
-      numbered && chapterNumber !== null ? `${chapterNumber}.${result.length + 1}` : "";
+      explicitNumber ?? (numbered && chapterNumber !== null ? `${chapterNumber}.${result.length + 1}` : "");
     let slug = slugify(displayNumber ? `${displayNumber} ${titleText}` : titleText);
     if (!slug) slug = `section-${result.length + 1}`;
     let unique = slug;
@@ -208,9 +245,18 @@ function splitByDepth(
 
   // Chapter intro (before the first ##): meaty ones become an "Overview" tile,
   // trivial ones are dropped (they're usually a single transition sentence).
+  // A chapter with no sub-chapters at all IS its intro: one section, titled
+  // like the chapter and numbered like it, so it stays readable in the zoom
+  // view and in reading order.
   const introEnd = subs.length > 0 ? subs[0].line : bodyLines.length;
   const introLines = bodyLines.slice(0, introEnd);
-  if (countWords(introLines) > 25) push("Overview", introLines, true, origIndex[0], fileEnd(introEnd));
+  if (subs.length === 0) {
+    if (introLines.some((l) => l.trim() !== "")) {
+      push(chapterTitle, introLines, true, origIndex[0], fileEnd(introEnd), chapterNumber !== null ? String(chapterNumber) : "");
+    }
+  } else if (countWords(introLines) > 25) {
+    push("Overview", introLines, true, origIndex[0], fileEnd(introEnd));
+  }
 
   for (let i = 0; i < subs.length; i++) {
     const end = i + 1 < subs.length ? subs[i + 1].line : bodyLines.length;
