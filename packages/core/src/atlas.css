@@ -479,6 +479,19 @@ a {
   max-width: 68ch;
 }
 
+/* Group separator inside the section grid: a top-level heading that had no
+   text of its own, folded into its sections (SubChapter.group). */
+.sub-group {
+  grid-column: 1 / -1;
+  margin: 14px 0 -4px;
+  font-family: var(--font-display-stack);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
 /* ── Zoom view: rails + stage ─────────────────────────────────────────── */
 
 .zoom {

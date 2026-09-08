@@ -86,7 +86,16 @@ export function parseChapter(
   const preambleMd = chapterLine > 0 ? joinBody(lines.slice(0, chapterLine)) : null;
 
   // Boundary scan after the chapter heading.
-  type Boundary = { line: number; number: string | null; displayNumber: string; title: string };
+  type Boundary = {
+    line: number;
+    number: string | null;
+    displayNumber: string;
+    title: string;
+    kind: "nm" | "bare" | "plain";
+    /** Major part of the number: 3 for "3.1" and for "3." */
+    major: number | null;
+    group?: string | null;
+  };
   const boundaries: Boundary[] = [];
   {
     let inFence = false;
@@ -110,18 +119,26 @@ export function parseChapter(
           line: i,
           number: `${nm[1]}.${nm[2]}`,
           displayNumber: `${nm[1]}.${nm[2]}`,
-          title: nm[3].trim()
+          title: nm[3].trim(),
+          kind: "nm",
+          major: parseInt(nm[1], 10)
         });
         sawNumbered = true;
         continue;
       }
       const bare = text.match(BARE_ORDINAL);
       if (bare) {
+        // Inside a numbered chapter file, "7. Vars" is section 1.7. In a file
+        // with no chapter number of its own (a standalone numbered outline)
+        // the bare ordinals ARE the top level: "3." is 3, never "0.3".
+        const composed = chapterNumber > 0 ? `${chapterNumber}.${bare[1]}` : bare[1];
         boundaries.push({
           line: i,
-          number: `${chapterNumber}.${bare[1]}`,
-          displayNumber: `${chapterNumber}.${bare[1]}`,
-          title: bare[2].trim()
+          number: composed,
+          displayNumber: composed,
+          title: bare[2].trim(),
+          kind: "bare",
+          major: parseInt(bare[1], 10)
         });
         sawNumbered = true;
         continue;
@@ -133,24 +150,49 @@ export function parseChapter(
         // Cheat sheets, codas ("# Module 4 cheat sheet") — only once real
         // sub-chapters exist; earlier H1s would be intro structure.
         if (sawNumbered) {
-          boundaries.push({ line: i, number: null, displayNumber: "", title: text });
+          boundaries.push({ line: i, number: null, displayNumber: "", title: text, kind: "plain", major: null });
         }
         continue;
       }
       // depth === 2: teasers and cheat sheets split; everything else stays in
       // the body (keeps module-05's "## Account" inside "# 5.2 …").
       if (sawNumbered && UNNUMBERED_H2_SPLIT.test(text)) {
-        boundaries.push({ line: i, number: null, displayNumber: "", title: text });
+        boundaries.push({ line: i, number: null, displayNumber: "", title: text, kind: "plain", major: null });
       }
     }
+  }
+
+  // Standalone outlines: a top-level "N." heading with no text of its own
+  // before its first "N.M" is structure, not content — it becomes the group
+  // label of those sections instead of an empty tile. One that does carry
+  // text stays a tile; its sections simply follow it.
+  const kept: (Boundary & { end: number })[] = [];
+  for (let idx = 0; idx < boundaries.length; idx++) {
+    const b = boundaries[idx];
+    const next = boundaries[idx + 1];
+    const end = next ? next.line : lines.length;
+    if (
+      chapterNumber === 0 &&
+      b.kind === "bare" &&
+      next?.kind === "nm" &&
+      next.major === b.major &&
+      trimBody(lines.slice(b.line + 1, next.line)).length === 0
+    ) {
+      const label = `${b.major}. ${b.title}`;
+      for (let j = idx + 1; j < boundaries.length && boundaries[j].kind === "nm" && boundaries[j].major === b.major; j++) {
+        boundaries[j].group = label;
+      }
+      continue;
+    }
+    kept.push({ ...b, end });
   }
 
   const introEnd = boundaries.length > 0 ? boundaries[0].line : lines.length;
   const introMd = joinBody(lines.slice(chapterLine + 1, introEnd));
 
   const usedSlugs = new Set<string>();
-  const subchapters: SubChapter[] = boundaries.map((b, idx) => {
-    const end = idx + 1 < boundaries.length ? boundaries[idx + 1].line : lines.length;
+  const subchapters: SubChapter[] = kept.map((b, idx) => {
+    const end = b.end;
     const bodyLines = trimBody(lines.slice(b.line + 1, end));
     const mdBody = bodyLines.join("\n");
     const { tags, hasInterviewBlocks, codeFenceCount } = computeTags(b.title, bodyLines);
@@ -174,6 +216,7 @@ export function parseChapter(
       wordCount: countWords(bodyLines),
       codeFenceCount,
       excerpt: extractExcerpt(mdBody),
+      group: b.group ?? null,
       sourceStart: b.line,
       sourceEnd: end
     };

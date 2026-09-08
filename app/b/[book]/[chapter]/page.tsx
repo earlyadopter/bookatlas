@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { getBook } from "@/lib/loadBook";
 import { matchesFilter, parseFilter } from "@bookatlas/core";
@@ -92,11 +93,13 @@ export default async function ChapterPage({
         <div className="doc chapter-intro" dangerouslySetInnerHTML={{ __html: chapter.introHtml }} />
       ) : null}
       <div className="sub-grid">
-        {chapter.subchapters.map((sub) => {
+        {chapter.subchapters.map((sub, i) => {
           const dimmed = filter !== null && !matchesFilter(sub, filter);
+          const group = sub.group && sub.group !== chapter.subchapters[i - 1]?.group ? sub.group : null;
           return (
+            <Fragment key={sub.slug}>
+            {group ? <h3 className="sub-group">{group}</h3> : null}
             <TransitionLink
-              key={sub.slug}
               href={subHref(book.id, chapter.slug, sub.slug, filter ?? undefined)}
               className={dimmed ? "sub-tile dimmed" : "sub-tile"}
               morph
@@ -118,6 +121,7 @@ export default async function ChapterPage({
               {sub.excerpt ? <span className="sub-tile-excerpt">{sub.excerpt}</span> : null}
               <span className="sub-tile-meta">{sub.wordCount} words</span>
             </TransitionLink>
+            </Fragment>
           );
         })}
       </div>

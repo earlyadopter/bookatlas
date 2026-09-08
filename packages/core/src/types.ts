@@ -58,6 +58,12 @@ export interface SubChapter {
   wordCount: number;
   codeFenceCount: number;
   excerpt: string | null;
+  /**
+   * Label of the top-level heading this section sits under, when that heading
+   * had no text of its own and was folded into its sections ("3. Product
+   * Principles"). Grids render a run of same-group sections under a separator.
+   */
+  group?: string | null;
   /** 0-based index of the section's heading line in the source file. */
   sourceStart: number;
   /** Exclusive end line: the next boundary's heading, or the chapter/file end. */
