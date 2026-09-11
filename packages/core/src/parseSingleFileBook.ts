@@ -28,10 +28,19 @@ export type ParsedBook = {
 };
 
 /** Fence-aware count of chapter headings per convention. */
-function countConventions(lines: string[]): { h1Chapters: number; h2Chapters: number; outline: number } {
+function countConventions(lines: string[]): {
+  h1Chapters: number;
+  h2Chapters: number;
+  outline: number;
+  /** Majors of `# N.` outline chapters, and of `## N.M` / `# N.M` sub-headings. */
+  outlineMajors: Set<number>;
+  subMajors: Set<number>;
+} {
   let h1Chapters = 0;
   let h2Chapters = 0;
   let outline = 0;
+  const outlineMajors = new Set<number>();
+  const subMajors = new Set<number>();
   let inFence = false;
   for (const line of lines) {
     const trimmed = line.trim();
@@ -42,22 +51,41 @@ function countConventions(lines: string[]): { h1Chapters: number; h2Chapters: nu
     if (inFence) continue;
     if (/^# Chapter\s+\d+/.test(trimmed)) h1Chapters++;
     else if (/^## Chapter\s+\d+/.test(trimmed)) h2Chapters++;
-    else if (OUTLINE_CHAPTER.test(trimmed)) outline++;
+    else {
+      const ch = trimmed.match(OUTLINE_CHAPTER);
+      if (ch) {
+        outline++;
+        outlineMajors.add(parseInt(ch[1], 10));
+        continue;
+      }
+      const sub = trimmed.match(/^#{1,2}\s+(\d+)\.\d+\.?\s+\S/);
+      if (sub) subMajors.add(parseInt(sub[1], 10));
+    }
   }
-  return { h1Chapters, h2Chapters, outline };
+  return { h1Chapters, h2Chapters, outline, outlineMajors, subMajors };
 }
 
 const OUTLINE_CHAPTER = /^# (\d+)\.\s+(\S.*)$/;
 const OUTLINE_H1_SUB = /^#\s+\d+\.\d+\.?\s+(.+)$/;
+/** File names that mark a chapter of a folder book: "module-01", "03-intro", "chapter 7". */
+const CHAPTER_FILENAME = /^\d+[-_. ]|^(module|chapter|part|lesson|week|day|unit|section)[-_ ]?\d+/i;
 
 /**
  * Does this file read as a whole book (chapters + sections) rather than as
- * one chapter? True for `# Chapter N` / `## Chapter N` books and for numbered
- * outlines with at least two `# N. Title` headings.
+ * one chapter? True for `# Chapter N` / `## Chapter N` books, and for
+ * numbered outlines: at least two `# N. Title` headings AND at least one
+ * `## N.M` / `# N.M` sub-heading under one of them (a file whose bare `N.`
+ * headings have no sub-headings is one chapter with numbered sections, the
+ * shape of chapter files in a folder). A chapter-style file name
+ * ("module-01.md") always means a chapter.
  */
-export function looksLikeSingleFileBook(raw: string): boolean {
+export function looksLikeSingleFileBook(raw: string, filename?: string): boolean {
   const c = countConventions(raw.split(/\r?\n/));
-  return c.h1Chapters + c.h2Chapters > 0 || c.outline >= 2;
+  if (c.h1Chapters + c.h2Chapters > 0) return true;
+  if (filename && CHAPTER_FILENAME.test(filename)) return false;
+  if (c.outline < 2) return false;
+  for (const m of c.subMajors) if (c.outlineMajors.has(m)) return true;
+  return false;
 }
 
 export function parseSingleFileBook(raw: string): ParsedBook {
