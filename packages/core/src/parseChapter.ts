@@ -70,7 +70,10 @@ export function parseChapter(
       }
       if (!inFence && /^#{1,3}\s+\S/.test(trimmed)) {
         chapterLine = i;
-        chapterTitle = trimmed.replace(/^#+\s*/, "");
+        // Folder books often number the file's own heading ("# 4. Circle of
+        // Fifths"); the tile already shows the number (from the file name),
+        // so drop a leading "N." / "N.M" to avoid showing it twice.
+        chapterTitle = trimmed.replace(/^#+\s*/, "").replace(/^\d+(?:\.\d+)?\.?\s+/, "");
         fullTitle = chapterTitle;
         break;
       }

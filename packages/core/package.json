@@ -1,6 +1,6 @@
 {
   "name": "@bookatlas/core",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Bookatlas core: markdown book parsers, nav/slug helpers, and the zoomable-atlas interaction components",
   "license": "MIT",
   "type": "module",
