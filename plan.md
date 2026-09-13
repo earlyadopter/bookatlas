@@ -56,4 +56,7 @@ spellings and progression lines; these become textbook-style figures.
 - [ ] npm publish @bookatlas/core (account action; until then consumers use a git dependency + transpilePackages)
 - [x] ship the atlas stylesheet with @bookatlas/core (`@bookatlas/core/atlas.css`; app/globals.css keeps only landing/library/footer/structure-nav rules and layout.tsx imports both) (2026-09-06)
 - [ ] Mac app (apps/mac, SwiftUI + WKWebView over a atlas:// scheme handler; phases and findings in planning/mac-app.md): Phases 0–2 done (spike, core decoupling, the static atlas bundle in packages/atlas-ui); next is the shell (recents via bookmarks, FSEvents live reload, menu shortcuts, app icon), then editing
+- [x] Mac app pages for App Store Connect: /mac (marketing, "coming soon" until the listing exists), /support, /privacy (app policy + a note on the site's Google Analytics) — static routes (2026-09-13)
+- [ ] support@bookatlas.dev: mail forwarding to the owner's inbox (MX + SPF records in Vercel DNS); until then the address on /support and /privacy bounces
+- [ ] /mac: set APP_STORE_URL to the listing once the app is approved
 - [ ] second demo book, unrelated subject, so the landing doesn't read MuleSoft-specific — candidate: a "Bookatlas Handbook" assembled from the repo's own guides (needs restructuring into numbered-section book shape; content review before it goes public)
