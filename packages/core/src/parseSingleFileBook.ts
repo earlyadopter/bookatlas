@@ -11,6 +11,12 @@ import { extractExcerpt } from "./renderMarkdown";
 //   C: numbered outlines — chapters `# N. Title` (H1), sub-chapters `##`
 //      (numbered `## N.M Title` or plain), plus `# N.M Title` H1s that
 //      authors sometimes use for sub-chapters. PRDs, specs, plans.
+//   D: labelled chapters — the author's own word plus a number, `# Module 1 —
+//      Title`, `# Lesson 2: Title`, `# Scenario 3. Title` (H1), sub-chapters
+//      `##`. Needs two headings sharing the word, so one `# Module 3 — …` at
+//      the top of a folder's chapter file stays a chapter (that file's name
+//      settles it first anyway). Trailing H1s after the last labelled chapter
+//      ("Final Capstone") become unnumbered chapters of their own.
 // `# PART ...` / `# Part ...` H1s are section dividers in every convention —
 // they become a `part` label on following chapters. Appendix/Glossary-style
 // trailing headings at the chapter depth (or H1) are unnumbered chapters.
@@ -35,12 +41,15 @@ function countConventions(lines: string[]): {
   /** Majors of `# N.` outline chapters, and of `## N.M` / `# N.M` sub-headings. */
   outlineMajors: Set<number>;
   subMajors: Set<number>;
+  /** Convention D: lower-cased label → the numbers seen with it, in file order. */
+  labels: Map<string, { label: string; numbers: Set<number> }>;
 } {
   let h1Chapters = 0;
   let h2Chapters = 0;
   let outline = 0;
   const outlineMajors = new Set<number>();
   const subMajors = new Set<number>();
+  const labels = new Map<string, { label: string; numbers: Set<number> }>();
   let inFence = false;
   for (const line of lines) {
     const trimmed = line.trim();
@@ -60,12 +69,36 @@ function countConventions(lines: string[]): {
       }
       const sub = trimmed.match(/^#{1,2}\s+(\d+)\.\d+\.?\s+\S/);
       if (sub) subMajors.add(parseInt(sub[1], 10));
+      const labelled = trimmed.match(LABELLED_CHAPTER);
+      if (labelled) {
+        const key = labelled[1].toLowerCase();
+        // "Part" opens a section divider, never a chapter.
+        if (key === "part") continue;
+        const entry = labels.get(key) ?? { label: labelled[1], numbers: new Set<number>() };
+        entry.numbers.add(parseInt(labelled[2], 10));
+        labels.set(key, entry);
+      }
     }
   }
-  return { h1Chapters, h2Chapters, outline, outlineMajors, subMajors };
+  return { h1Chapters, h2Chapters, outline, outlineMajors, subMajors, labels };
 }
 
 const OUTLINE_CHAPTER = /^# (\d+)\.\s+(\S.*)$/;
+/** Convention D probe: `# <Word> <N>` optionally followed by a separator and a title. */
+const LABELLED_CHAPTER = /^#\s+([A-Za-z][A-Za-z-]*)\s+(\d+)\s*(?:[—–:.-]\s*(.*))?$/;
+/** The label used by the most chapters, when at least two share it. */
+function dominantLabel(labels: Map<string, { label: string; numbers: Set<number> }>): string | null {
+  let best: { label: string; numbers: Set<number> } | null = null;
+  for (const entry of labels.values()) {
+    if (entry.numbers.size < 2) continue;
+    if (!best || entry.numbers.size > best.numbers.size) best = entry;
+  }
+  return best ? best.label : null;
+}
+/** Convention D chapter heading for one label: groups are (number, title). */
+function labelledChapterRe(label: string): RegExp {
+  return new RegExp(`^#\\s+${label}\\s+(\\d+)\\s*(?:[—–:.-]\\s*(.*))?$`, "i");
+}
 const OUTLINE_H1_SUB = /^#\s+\d+\.\d+\.?\s+(.+)$/;
 /** File names that mark a chapter of a folder book: "module-01", "03-intro", "chapter 7". */
 const CHAPTER_FILENAME = /^\d+[-_. ]|^(module|chapter|part|lesson|week|day|unit|section)[-_ ]?\d+/i;
@@ -76,13 +109,15 @@ const CHAPTER_FILENAME = /^\d+[-_. ]|^(module|chapter|part|lesson|week|day|unit|
  * numbered outlines: at least two `# N. Title` headings AND at least one
  * `## N.M` / `# N.M` sub-heading under one of them (a file whose bare `N.`
  * headings have no sub-headings is one chapter with numbered sections, the
- * shape of chapter files in a folder). A chapter-style file name
- * ("module-01.md") always means a chapter.
+ * shape of chapter files in a folder), and for labelled chapters: at least two
+ * H1s sharing a word and a number (`# Module 1 — …`, `# Module 2 — …`).
+ * A chapter-style file name ("module-01.md") always means a chapter.
  */
 export function looksLikeSingleFileBook(raw: string, filename?: string): boolean {
   const c = countConventions(raw.split(/\r?\n/));
   if (c.h1Chapters + c.h2Chapters > 0) return true;
   if (filename && CHAPTER_FILENAME.test(filename)) return false;
+  if (dominantLabel(c.labels)) return true;
   if (c.outline < 2) return false;
   for (const m of c.subMajors) if (c.outlineMajors.has(m)) return true;
   return false;
@@ -92,12 +127,15 @@ export function parseSingleFileBook(raw: string): ParsedBook {
   const lines = raw.split(/\r?\n/);
 
   // Detect the heading convention, fence-aware.
-  const { h1Chapters, h2Chapters, outline } = countConventions(lines);
+  const { h1Chapters, h2Chapters, outline, labels } = countConventions(lines);
   const isOutline = h1Chapters + h2Chapters === 0 && outline >= 2;
+  const label = h1Chapters + h2Chapters === 0 && !isOutline ? dominantLabel(labels) : null;
   const chapterDepth = h2Chapters > h1Chapters ? 2 : 1;
-  const chapterRe = isOutline
-    ? OUTLINE_CHAPTER
-    : new RegExp(`^#{${chapterDepth}} Chapter\\s+(\\d+)\\s*[:.]?\\s*(.*)$`);
+  const chapterRe = label
+    ? labelledChapterRe(label)
+    : isOutline
+      ? OUTLINE_CHAPTER
+      : new RegExp(`^#{${chapterDepth}} Chapter\\s+(\\d+)\\s*[:.]?\\s*(.*)$`);
   const appendixRe = new RegExp(`^#{1,${chapterDepth}} (.+)$`);
   const subDepth = chapterDepth + 1;
   // Outline authors sometimes write sub-chapters as `# 7.1 Title` H1s.
@@ -130,7 +168,11 @@ export function parseSingleFileBook(raw: string): ParsedBook {
         continue;
       }
       const app = trimmed.match(appendixRe);
-      if (app && APPENDIX_TITLE.test(app[1].trim())) {
+      // Labelled books keep their trailing H1s ("Final Capstone", "Definition
+      // of Done") as unnumbered chapters; elsewhere only Appendix/Glossary-
+      // style titles graduate from body text to a chapter of their own.
+      const trailing = label !== null && boundaries.length > 0;
+      if (app && (trailing || APPENDIX_TITLE.test(app[1].trim()))) {
         boundaries.push({ line: i, number: null, title: app[1].trim(), part: currentPart });
       }
     }
@@ -167,7 +209,7 @@ export function parseSingleFileBook(raw: string): ParsedBook {
       bodyLines.push(lines[i]);
       origIndex.push(i);
     }
-    const displayTitle = b.title || `Chapter ${b.number ?? idx + 1}`;
+    const displayTitle = b.title || `${label ?? "Chapter"} ${b.number ?? idx + 1}`;
 
     let slug = b.number !== null ? `chapter-${String(b.number).padStart(2, "0")}` : slugify(displayTitle);
     let unique = slug;
@@ -179,7 +221,7 @@ export function parseSingleFileBook(raw: string): ParsedBook {
       slug: unique,
       number: chapterNumber,
       title: displayTitle,
-      fullTitle: b.number !== null ? `Chapter ${b.number} — ${displayTitle}` : displayTitle,
+      fullTitle: b.number !== null ? `${label ?? "Chapter"} ${b.number} — ${displayTitle}` : displayTitle,
       part: b.part,
       introMd: null as string | null,
       preambleMd: null as string | null,
