@@ -165,6 +165,77 @@ export function parseChapter(
     }
   }
 
+  // Rescue pass: a chapter that produced no boundaries at all has no tiles —
+  // its entire body renders as one undifferentiated intro. That happens to
+  // perfectly ordinary documents: numbers pushed one level deeper ("## Phase
+  // 1" carrying "### 1.1 Title"), or plain unnumbered "## Section" headings.
+  // The scan above only looks at H1/H2 and only splits on numbers, by design
+  // — depth is unreliable in the exported corpora it was built for.
+  //
+  // So rather than loosen that scan for everyone, retry only when it found
+  // nothing. This cannot change any file that already yields sections, which
+  // is what makes it safe to apply to every consumer at once.
+  if (boundaries.length === 0) {
+    type Candidate = { line: number; depth: number; text: string };
+    const headings: Candidate[] = [];
+    let inFence = false;
+    for (let i = chapterLine + 1; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (/^(```|~~~)/.test(trimmed)) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) continue;
+      const h = trimmed.match(/^(#{2,4})\s+(.+)$/);
+      if (!h) continue;
+      const text = h[2].trim();
+      if (pullQuoteHeuristic && isPullQuote(text)) continue;
+      headings.push({ line: i, depth: h[1].length, text });
+    }
+
+    // Pick the one depth that carries the document's structure: most
+    // numbered headings wins, falling back to the most headings of any kind.
+    // Ties go to the shallower depth, which is the more likely top level.
+    let best: { depth: number; numbered: number; total: number } | null = null;
+    for (const depth of [...new Set(headings.map((h) => h.depth))].sort((a, b) => a - b)) {
+      const at = headings.filter((h) => h.depth === depth);
+      const numbered = at.filter((h) => NUMBERED_NM.test(h.text) || BARE_ORDINAL.test(h.text)).length;
+      const cand = { depth, numbered, total: at.length };
+      if (
+        !best ||
+        cand.numbered > best.numbered ||
+        (cand.numbered === best.numbered && best.numbered === 0 && cand.total > best.total)
+      ) {
+        best = cand;
+      }
+    }
+
+    if (best && best.total > 0) {
+      const chosen = best.depth;
+      for (const h of headings) {
+        if (h.depth !== chosen) continue;
+        // The nearest shallower heading above becomes the group label, so
+        // "## Phase 1" renders as a separator over its "### 1.x" run rather
+        // than vanishing into the body.
+        const parent = headings
+          .filter((c) => c.line < h.line && c.depth < chosen)
+          .pop();
+        const nm = h.text.match(NUMBERED_NM);
+        const bare = nm ? null : h.text.match(BARE_ORDINAL);
+        const composed = bare ? (chapterNumber > 0 ? `${chapterNumber}.${bare[1]}` : bare[1]) : null;
+        boundaries.push({
+          line: h.line,
+          number: nm ? `${nm[1]}.${nm[2]}` : composed,
+          displayNumber: nm ? `${nm[1]}.${nm[2]}` : (composed ?? ""),
+          title: (nm ? nm[3] : bare ? bare[2] : h.text).trim(),
+          kind: nm || bare ? "nm" : "plain",
+          major: nm ? parseInt(nm[1], 10) : bare ? parseInt(bare[1], 10) : null,
+          group: parent ? parent.text : null
+        });
+      }
+    }
+  }
+
   // Standalone outlines: a top-level "N." heading with no text of its own
   // before its first "N.M" is structure, not content — it becomes the group
   // label of those sections instead of an empty tile. One that does carry
