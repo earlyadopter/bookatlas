@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { APP_STORE_URL, CLOUD_URL, GITHUB_URL, MAC_PRICE } from "@/lib/links";
 
 export const metadata: Metadata = {
   title: "BookAtlas for Mac",
@@ -7,15 +8,12 @@ export const metadata: Metadata = {
     "A native Mac app that turns any folder of markdown into a zoomable tile atlas — read, navigate, and make quick edits in place."
 };
 
-// Set to the App Store listing once the app is approved; until then the
-// button reads "coming soon" and links nowhere.
-const APP_STORE_URL: string | null = null;
-
 export default function MacPage() {
   return (
     <main className="page">
       <header className="topbar">
         <Link href="/" className="brand">Bookatlas</Link>
+        <a href={CLOUD_URL} className="topbar-book">Cloud</a>
         <Link href="/" className="topbar-book">Web version</Link>
       </header>
 
@@ -30,7 +28,9 @@ export default function MacPage() {
         </p>
         <p className="hero-actions">
           {APP_STORE_URL ? (
-            <a href={APP_STORE_URL} className="chip current">On the Mac App Store →</a>
+            <a href={APP_STORE_URL} className="chip current">
+              On the Mac App Store — {MAC_PRICE} →
+            </a>
           ) : (
             <span className="chip">Coming soon to the Mac App Store</span>
           )}
@@ -53,9 +53,10 @@ export default function MacPage() {
       <section className="landing-section">
         <h2 className="page-title">Open source at the core</h2>
         <p className="hero-note">
-          BookAtlas is built on <a href="https://github.com/earlyadopter/bookatlas" target="_blank" rel="noopener">Bookatlas</a>,
+          BookAtlas is built on <a href={GITHUB_URL} target="_blank" rel="noopener">Bookatlas</a>,
           MIT-licensed. The web version and the parsing engine are free and open; the Mac app packages
-          them as a polished, sandboxed desktop reader.
+          them as a polished, sandboxed desktop reader. To publish a book online instead of reading it
+          locally, <a href={CLOUD_URL}>Bookatlas Cloud</a> hosts it at a shareable URL.
         </p>
       </section>
 
@@ -63,7 +64,8 @@ export default function MacPage() {
         <Link href="/">bookatlas.dev</Link> ·{" "}
         <Link href="/support">Support</Link> ·{" "}
         <Link href="/privacy">Privacy</Link> ·{" "}
-        <a href="https://github.com/earlyadopter/bookatlas" target="_blank" rel="noopener">GitHub</a>
+        <a href={CLOUD_URL}>Cloud</a> ·{" "}
+        <a href={GITHUB_URL} target="_blank" rel="noopener">GitHub</a>
       </footer>
     </main>
   );

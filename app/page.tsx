@@ -3,10 +3,7 @@ import { connection } from "next/server";
 import { listBooks } from "@/lib/loadBook";
 import { bookHref } from "@/lib/hrefs";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-
-
-const GITHUB_URL = "https://github.com/earlyadopter/bookatlas";
+import { APP_STORE_URL, CLOUD_URL, GITHUB_URL, MAC_PRICE } from "@/lib/links";
 
 // Books that are format demos, not the product's subject — badged on the card.
 const DEMO_BOOK_IDS = new Set(["mulesoft-bootcamp"]);
@@ -30,6 +27,8 @@ export default async function LibraryPage() {
     <main className="page">
       <header className="topbar">
         <span className="brand">Bookatlas</span>
+        <a href={CLOUD_URL} className="topbar-book">Cloud</a>
+        <Link href="/mac" className="topbar-book">Mac app</Link>
         <a href={GITHUB_URL} className="topbar-book" target="_blank" rel="noopener">
           GitHub
         </a>
@@ -45,10 +44,53 @@ export default async function LibraryPage() {
           scroll and too structured to flatten. Open source, MIT, no database.
         </p>
         <p className="hero-actions">
-          <a href={GITHUB_URL} className="chip current" target="_blank" rel="noopener">
-            Get it on GitHub →
+          <a href={CLOUD_URL} className="chip current">Publish a book online →</a>
+          <a href={GITHUB_URL} className="chip" target="_blank" rel="noopener">
+            Get it on GitHub
           </a>
         </p>
+      </section>
+
+      <section className="landing-section">
+        <h2 className="page-title">Three ways to use it</h2>
+        <p className="hero-note">
+          The engine is the same in all three: the parsers and the atlas components of this
+          repository. Pick the one that matches where your files live and who should see them.
+        </p>
+        <div className="ways-grid">
+          <a className="way-card lead" href={CLOUD_URL}>
+            <span className="way-badge">Beta · invite only</span>
+            <span className="way-title">Bookatlas Cloud</span>
+            <span className="way-price">Free tier · Pro $6/mo</span>
+            <span className="way-desc">
+              Upload a folder, check the parse report, publish to a clean URL you can share or
+              password-protect. Nothing to install or host.
+            </span>
+            <span className="way-cta">cloud.bookatlas.dev →</span>
+          </a>
+
+          <Link className="way-card" href="/mac">
+            <span className="way-title">BookAtlas for Mac</span>
+            <span className="way-price">{APP_STORE_URL ? MAC_PRICE : "Coming soon"}</span>
+            <span className="way-desc">
+              A native reader for the files already on your Mac. Open from Finder, read with the
+              arrow keys, edit a paragraph in place. No account, no network.
+            </span>
+            <span className="way-cta">
+              {APP_STORE_URL ? "On the Mac App Store →" : "About the Mac app →"}
+            </span>
+          </Link>
+
+          <a className="way-card" href={GITHUB_URL} target="_blank" rel="noopener">
+            <span className="way-title">Open source</span>
+            <span className="way-price">Free · MIT</span>
+            <span className="way-desc">
+              Run it yourself, embed the reader in your own site, or fork it. The renderer and the
+              parsers are the whole product — nothing is held back.
+            </span>
+            <span className="way-cta">GitHub →</span>
+          </a>
+        </div>
       </section>
 
       <h2 className="page-title">Try it — the demo book, live</h2>
@@ -125,6 +167,8 @@ pnpm install && pnpm dev
 
       <footer className="landing-footer">
         <a href={GITHUB_URL} target="_blank" rel="noopener">GitHub</a> ·{" "}
+        <Link href="/mac">Mac app</Link> ·{" "}
+        <a href={CLOUD_URL}>Cloud</a> ·{" "}
         <a href="https://modernqacourse.com" target="_blank" rel="noopener">powers modernQAcourse</a> ·{" "}
         MIT © <a href="https://earlyadopterlabs.com" target="_blank" rel="noopener">Yuri Syuganov</a>
       </footer>
