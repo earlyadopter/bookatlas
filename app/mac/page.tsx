@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { APP_STORE_URL, CLOUD_URL, GITHUB_URL, MAC_PRICE } from "@/lib/links";
 
 export const metadata: Metadata = {
-  title: "BookAtlas for Mac",
+  title: "BookAtlas Desktop for Mac",
   description:
-    "A native Mac app that turns any folder of markdown into a zoomable tile atlas — read, navigate, and make quick edits in place."
+    "BookAtlas Desktop is a native Mac app that turns any folder of markdown into a zoomable tile atlas — read, navigate, and make quick edits in place."
 };
 
 export default function MacPage() {
@@ -18,9 +18,10 @@ export default function MacPage() {
       </header>
 
       <section className="hero">
-        <h1 className="hero-title">BookAtlas for Mac</h1>
+        <h1 className="hero-title">BookAtlas Desktop</h1>
+        <p className="hero-sub">A native app for macOS 15 or later.</p>
         <p className="hero-lede">
-          The native Mac companion to the open-source Bookatlas. Drop a markdown file or a whole
+          The desktop companion to the open-source Bookatlas. Drop a markdown file or a whole
           folder and read it as a zoomable atlas: files and chapters on strips up top, sections as
           tiles, click to zoom into a reading view with neighbouring sections on side rails. Open
           straight from Finder, adjust the text size, switch light and dark, and make quick edits in

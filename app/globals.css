@@ -15,6 +15,15 @@
   margin: 0 0 16px;
 }
 
+.hero-sub {
+  font-family: var(--font-mono-stack);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: -8px 0 14px;
+}
+
 .hero-lede {
   font-size: 1.05rem;
   line-height: 1.6;

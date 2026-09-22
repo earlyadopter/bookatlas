@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Support — BookAtlas for Mac",
+  title: "Support — BookAtlas Desktop",
   description: "Help and contact for BookAtlas, the markdown atlas reader for Mac."
 };
 
@@ -11,7 +11,7 @@ export default function SupportPage() {
     <main className="page">
       <header className="topbar">
         <Link href="/" className="brand">Bookatlas</Link>
-        <Link href="/mac" className="topbar-book">BookAtlas for Mac</Link>
+        <Link href="/mac" className="topbar-book">BookAtlas Desktop</Link>
       </header>
 
       <h1 className="page-title">Support</h1>
@@ -48,7 +48,7 @@ export default function SupportPage() {
       </section>
 
       <footer className="landing-footer">
-        <Link href="/">bookatlas.dev</Link> · <Link href="/mac">Mac app</Link> · <Link href="/privacy">Privacy</Link>
+        <Link href="/">bookatlas.dev</Link> · <Link href="/mac">Desktop</Link> · <Link href="/privacy">Privacy</Link>
       </footer>
     </main>
   );

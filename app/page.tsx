@@ -28,7 +28,7 @@ export default async function LibraryPage() {
       <header className="topbar">
         <span className="brand">Bookatlas</span>
         <a href={CLOUD_URL} className="topbar-book">Cloud</a>
-        <Link href="/mac" className="topbar-book">Mac app</Link>
+        <Link href="/mac" className="topbar-book">Desktop</Link>
         <a href={GITHUB_URL} className="topbar-book" target="_blank" rel="noopener">
           GitHub
         </a>
@@ -70,14 +70,14 @@ export default async function LibraryPage() {
           </a>
 
           <Link className="way-card" href="/mac">
-            <span className="way-title">BookAtlas for Mac</span>
+            <span className="way-title">BookAtlas Desktop</span>
             <span className="way-price">{APP_STORE_URL ? MAC_PRICE : "Coming soon"}</span>
             <span className="way-desc">
-              A native reader for the files already on your Mac. Open from Finder, read with the
+              A native Mac app for the files already on your disk. Open from Finder, read with the
               arrow keys, edit a paragraph in place. No account, no network.
             </span>
             <span className="way-cta">
-              {APP_STORE_URL ? "On the Mac App Store →" : "About the Mac app →"}
+              {APP_STORE_URL ? "On the Mac App Store →" : "About BookAtlas Desktop →"}
             </span>
           </Link>
 
@@ -167,7 +167,7 @@ pnpm install && pnpm dev
 
       <footer className="landing-footer">
         <a href={GITHUB_URL} target="_blank" rel="noopener">GitHub</a> ·{" "}
-        <Link href="/mac">Mac app</Link> ·{" "}
+        <Link href="/mac">Desktop</Link> ·{" "}
         <a href={CLOUD_URL}>Cloud</a> ·{" "}
         <a href="https://modernqacourse.com" target="_blank" rel="noopener">powers modernQAcourse</a> ·{" "}
         MIT © <a href="https://earlyadopterlabs.com" target="_blank" rel="noopener">Yuri Syuganov</a>
