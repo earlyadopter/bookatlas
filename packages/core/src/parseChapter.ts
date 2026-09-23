@@ -176,7 +176,7 @@ export function parseChapter(
   // nothing. This cannot change any file that already yields sections, which
   // is what makes it safe to apply to every consumer at once.
   if (boundaries.length === 0) {
-    type Candidate = { line: number; depth: number; text: string };
+    type Candidate = { line: number; depth: number; text: string; quoteish: boolean };
     const headings: Candidate[] = [];
     let inFence = false;
     for (let i = chapterLine + 1; i < lines.length; i++) {
@@ -189,24 +189,38 @@ export function parseChapter(
       const h = trimmed.match(/^(#{2,4})\s+(.+)$/);
       if (!h) continue;
       const text = h[2].trim();
-      if (pullQuoteHeuristic && isPullQuote(text)) continue;
-      headings.push({ line: i, depth: h[1].length, text });
+      // A pull quote cannot be a level, so it never votes on the depth — but
+      // once a depth is chosen it is kept, because the same test reads an
+      // identifier ("storageState", one lowercase word) as decoration and
+      // would drop a real topic out of the grid.
+      headings.push({ line: i, depth: h[1].length, text, quoteish: pullQuoteHeuristic && isPullQuote(text) });
     }
 
-    // Pick the one depth that carries the document's structure: most
-    // numbered headings wins, falling back to the most headings of any kind.
-    // Ties go to the shallower depth, which is the more likely top level.
-    let best: { depth: number; numbered: number; total: number } | null = null;
-    for (const depth of [...new Set(headings.map((h) => h.depth))].sort((a, b) => a - b)) {
-      const at = headings.filter((h) => h.depth === depth);
-      const numbered = at.filter((h) => NUMBERED_NM.test(h.text) || BARE_ORDINAL.test(h.text)).length;
-      const cand = { depth, numbered, total: at.length };
-      if (
-        !best ||
-        cand.numbered > best.numbered ||
-        (cand.numbered === best.numbered && best.numbered === 0 && cand.total > best.total)
-      ) {
-        best = cand;
+    // Pick the one depth that carries the document's structure. Numbering is
+    // the strongest signal, so a depth that has it wins outright. Otherwise
+    // the depth with the most DISTINCT titles wins — counting headings alone
+    // picked boilerplate: a cheat sheet that gives every topic the same two
+    // sub-headings ("## Topic" over "### 30-second explanation" / "### If
+    // they ask more") has more sub-headings than topics, and the reader got a
+    // grid of identical tile titles. Repetition marks a depth as the shape of
+    // the topics rather than the topics themselves, while a genuine run of
+    // sub-headings ("### Part I", "### Part II", …) is all distinct and still
+    // wins over its shallower parent. Ties go to the shallower depth.
+    const depths = [...new Set(headings.filter((h) => !h.quoteish).map((h) => h.depth))].sort((a, b) => a - b);
+    const at = (depth: number) => headings.filter((h) => h.depth === depth && !h.quoteish);
+    const numberedAt = (depth: number) =>
+      at(depth).filter((h) => NUMBERED_NM.test(h.text) || BARE_ORDINAL.test(h.text)).length;
+    const distinctAt = (depth: number) =>
+      new Set(at(depth).map((h) => h.text.trim().toLowerCase())).size;
+
+    let best: { depth: number; total: number } | null = null;
+    for (const depth of depths) {
+      if (numberedAt(depth) === 0) continue;
+      if (!best || numberedAt(depth) > numberedAt(best.depth)) best = { depth, total: at(depth).length };
+    }
+    if (!best) {
+      for (const depth of depths) {
+        if (!best || distinctAt(depth) > distinctAt(best.depth)) best = { depth, total: at(depth).length };
       }
     }
 
