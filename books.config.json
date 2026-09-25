@@ -1,10 +1,11 @@
 {
   "books": [
     {
-      "id": "mulesoft-bootcamp",
-      "title": "Two-Day MuleSoft → Salesforce Bootcamp",
-      "path": "./demo/mulesoft-bootcamp",
-      "accent": "#0e7268"
+      "id": "american-history",
+      "title": "American History",
+      "path": "./demo/american-history",
+      "accent": "#0e7268",
+      "filters": false
     }
   ]
 }

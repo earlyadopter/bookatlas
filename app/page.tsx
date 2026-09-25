@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { APP_STORE_URL, CLOUD_URL, GITHUB_URL, MAC_PRICE } from "@/lib/links";
 
 // Books that are format demos, not the product's subject — badged on the card.
-const DEMO_BOOK_IDS = new Set(["mulesoft-bootcamp"]);
+const DEMO_BOOK_IDS = new Set(["american-history"]);
 
 // Content-in-repo deployments set STATIC_BOOKS=1: pages render once per
 // deploy and serve from the full-route cache. Otherwise connection() keeps
@@ -94,8 +94,8 @@ export default async function LibraryPage() {
       <h2 className="page-title">Try it — the demo book, live</h2>
       <p className="hero-note">
         The subject is incidental — any folder of markdown gets this treatment. This demo happens
-        to be a 20-module MuleSoft bootcamp, generated in conversation with ChatGPT and rendered
-        straight from its markdown files. Click the book, then a chapter, then any tile. Use{" "}
+        to be a history of the United States in twelve eras, one markdown file per era, rendered
+        straight from those files. Click the book, then a chapter, then any tile. Use{" "}
         <kbd>←</kbd>/<kbd>→</kbd> to read through.
       </p>
       <div className="book-grid">
