@@ -76,9 +76,7 @@ export default async function LibraryPage() {
               A native Mac app for the files already on your disk. Open from Finder, read with the
               arrow keys, edit a paragraph in place. No account, no network.
             </span>
-            <span className="way-cta">
-              {APP_STORE_URL ? "On the Mac App Store →" : "About BookAtlas Desktop →"}
-            </span>
+            <span className="way-cta">About BookAtlas Desktop →</span>
           </Link>
 
           <a className="way-card" href={GITHUB_URL} target="_blank" rel="noopener">
