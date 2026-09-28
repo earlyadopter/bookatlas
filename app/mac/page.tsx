@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { APP_STORE_URL, CLOUD_URL, GITHUB_URL, MAC_PRICE } from "@/lib/links";
+import { APP_STORE_URL, appStoreLink, CLOUD_URL, GITHUB_URL, MAC_PRICE } from "@/lib/links";
 
 export const metadata: Metadata = {
   title: "BookAtlas Desktop for Mac",
@@ -29,7 +29,7 @@ export default function MacPage() {
         </p>
         <p className="hero-actions">
           {APP_STORE_URL ? (
-            <a href={APP_STORE_URL} className="chip current">
+            <a href={appStoreLink("site-mac-page")} className="chip current">
               On the Mac App Store — {MAC_PRICE} →
             </a>
           ) : (
