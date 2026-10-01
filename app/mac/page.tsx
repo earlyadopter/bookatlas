@@ -17,24 +17,36 @@ export default function MacPage() {
         <Link href="/" className="topbar-book">Web version</Link>
       </header>
 
+      {/* The demo leads, the price follows.
+          The Mac App Store has no trial for a one-time purchase, so a visitor
+          is otherwise asked to pay $9.99 for something they have never seen,
+          from a developer they do not know, on a listing with no ratings yet.
+          The open web version IS the trial — it is the same parser and the same
+          reading view — so the first action on this page is to go use it. */}
       <section className="hero">
         <h1 className="hero-title">BookAtlas Desktop</h1>
-        <p className="hero-sub">A native app for macOS 15 or later.</p>
+        <p className="hero-sub">Read a folder of markdown as a map, not a scroll.</p>
         <p className="hero-lede">
-          The desktop companion to the open-source Bookatlas. Drop a markdown file or a whole
-          folder and read it as a zoomable atlas: files and chapters on strips up top, sections as
-          tiles, click to zoom into a reading view with neighbouring sections on side rails. Open
-          straight from Finder, adjust the text size, switch light and dark, and make quick edits in
-          place — click any block to edit its markdown, click away to save.
+          Chapters and sections become tiles. Click one to zoom into the reading view, with its
+          neighbours on the side rails; the arrow keys read straight through a whole folder.
+          BookAtlas Desktop does it natively on macOS, from files already on your disk — opened
+          from Finder, nothing imported, nothing uploaded — and lets you edit a block in place.
         </p>
         <p className="hero-actions">
+          <Link href="/b/american-history" className="chip current">
+            Try it now in your browser — no download →
+          </Link>
           {APP_STORE_URL ? (
-            <a href={appStoreLink("site-mac-page")} className="chip current">
-              On the Mac App Store — {MAC_PRICE} →
+            <a href={appStoreLink("site-mac-page")} className="chip">
+              Get the Mac app — {MAC_PRICE} →
             </a>
           ) : (
             <span className="chip">Coming soon to the Mac App Store</span>
           )}
+        </p>
+        <p className="hero-note">
+          The browser version is the same reader, open source and free. The Mac app adds Finder
+          integration, offline use and in-place editing. macOS 15 or later.
         </p>
       </section>
 

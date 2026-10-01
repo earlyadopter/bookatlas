@@ -6,6 +6,8 @@ Born from a real workflow: long ChatGPT conversations saved as markdown "books",
 
 Bookatlas is open source under the [MIT license](LICENSE) — use it, fork it, ship your own library on it. **Site and live demo: [bookatlas.dev](https://bookatlas.dev).**
 
+> **Prefer it as a Mac app?** [**BookAtlas Desktop**](https://bookatlas.dev/go/github-readme) is on the Mac App Store — $9.99, one-time. It reads folders straight from Finder, with no server and nothing uploaded, and adds in-place editing: click a block, edit its markdown, click away to save. Buying it funds this repo; the web version here stays MIT and complete.
+
 ![Zoomed reading view: the section occupies the stage, neighboring sections stack on both rails, chapters strip on top](docs/screenshots/reading-view.png)
 
 ## Features
