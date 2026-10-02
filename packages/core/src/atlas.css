@@ -440,6 +440,31 @@ a {
   overflow: hidden;
 }
 
+/* Give the tiles room when there is no reason to ration it.
+   
+   The two-line clamp exists for a 36-tile cheat sheet, where packing the grid
+   matters more than any one title. It was applied to every grid, so a seven
+   section document — a resume, a short guide — also cut its headings in half
+   ("QUALITY ENGINEERING LEADER / AUTOM…"), losing the words that say what the
+   tile is, in a layout with empty space below it.
+   
+   :not(:has(> :nth-child(13))) reads "this grid has no thirteenth tile", so a
+   grid of twelve or fewer gets wider columns and four lines of title, and
+   anything larger keeps the dense packing unchanged. Twelve is about three
+   rows at these column widths — the point where scanning turns into hunting.
+   
+   Done in CSS rather than by passing a count into the markup so that the site,
+   the cloud and the Mac bundle all get it from this file, with no component
+   changes and no new prop. :has() needs Safari 15.4+ / Chrome 105+; older
+   engines simply keep the dense layout, which is the current behaviour. */
+.sub-grid:not(:has(> :nth-child(13))) {
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+}
+
+.sub-grid:not(:has(> :nth-child(13))) .sub-tile-title {
+  -webkit-line-clamp: 4;
+}
+
 .sub-tile-excerpt {
   color: var(--muted);
   font-size: 0.78rem;
